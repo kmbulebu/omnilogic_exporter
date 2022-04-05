@@ -1,0 +1,1 @@
+<Request><Name>GetSiteList</Name><Parameters><Parameter name="UserID" dataType="string">12345</Parameter></Parameters></Request>

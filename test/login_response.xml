@@ -1,0 +1,1 @@
+<Response><Name>Login</Name><Parameters><Parameter dataType="int" name="Status">0</Parameter><Parameter dataType="int" name="StatusMessage">Successfully</Parameter><Parameter dataType="int" name="UserID">12345</Parameter><Parameter dataType="int" name="Token">deadbeefdeadbeefdeadbeefdeadbeef</Parameter></Parameters></Response>

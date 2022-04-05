@@ -1,0 +1,21 @@
+<Response>
+    <Name>GetSiteList</Name>
+    <Parameters>
+        <Parameter dataType="int" name="Status">0</Parameter>
+        <Parameter dataType="int" name="StatusMessage">Successfully</Parameter>
+        <Parameter dataType="object" name="List">
+            <Item>
+                <Property name="BowID" dataType="int">1</Property>
+                <Property name="EquipmentID" dataType="int">9</Property>
+                <Property name="Resource_Msg_Id" dataType="int">16</Property>
+                <Property name="Severity" dataType="int">1</Property>
+                <Property name="Parameter1" dataType="string">FlowSensor</Property>
+                <Property name="Parameter2" dataType="string" />
+                <Property name="Valid" dataType="int">0</Property>
+                <Property name="Clearable" dataType="int">0</Property>
+                <Property name="Message" dataType="string">No Water Flow FlowSensor</Property>
+                <Property name="Comment" dataType="string">Pool Controller is detecting No Flow in flow sensor FlowSensor and the associated pump is turned on. Either the pump or the flow sensor could be malfunctioning. A valve could be in the wrong position directing the water flow somewhere else. There could also be a leak in the plumbing. To clear this alarm the underlying cause must be identified and corrected. Once the underlying cause is resolved, the alarm will resolve itself.</Property>
+            </Item>
+        </Parameter>
+    </Parameters>
+</Response>

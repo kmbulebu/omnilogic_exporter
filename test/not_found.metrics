@@ -1,0 +1,9 @@
+# HELP omnilogic_exporter_csv_parse_failures_total Number of errors while parsing CSV.
+# TYPE omnilogic_exporter_csv_parse_failures_total counter
+omnilogic_exporter_csv_parse_failures_total 0
+# HELP omnilogic_exporter_scrapes_total Current total OmniLogic scrapes.
+# TYPE omnilogic_exporter_scrapes_total counter
+omnilogic_exporter_scrapes_total 1
+# HELP omnilogic_up Was the last scrape of OmniLogic successful.
+# TYPE omnilogic_up gauge
+omnilogic_up 0
