@@ -15,11 +15,15 @@ package main
 
 import (
 	// "bufio"
-	"crypto/tls"
+
+	"errors"
+
 	// "errors"
 	"fmt"
 	"io"
+
 	// "net"
+	"encoding/xml"
 	"net/http"
 	_ "net/http/pprof"
 	"net/url"
@@ -33,6 +37,7 @@ import (
 	"github.com/go-kit/log"
 	"github.com/go-kit/log/level"
 	"github.com/prometheus/client_golang/prometheus"
+
 	// "github.com/prometheus/client_golang/prometheus/collectors"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/prometheus/common/promlog"
@@ -44,11 +49,12 @@ import (
 )
 
 const (
-	namespace = "omnilogic" // For Prometheus metrics.
+	namespace    = "omnilogic" // For Prometheus metrics.
+	omnilogicUrl = "https://www.haywardomnilogic.com/HAAPI/HomeAutomation/API.ashx"
 )
 
 var (
-	serverLabelNames   = []string{"backend", "server"}
+	serverLabelNames = []string{"backend", "server"}
 )
 
 type metricInfo struct {
@@ -119,46 +125,41 @@ var (
 		61: newServerMetric("http_total_time_average_seconds", "Avg. HTTP total time for last 1024 successful connections.", prometheus.GaugeValue, nil),
 	}
 
-	omnilogicInfo = prometheus.NewDesc(prometheus.BuildFQName(namespace, "version", "info"), "OmniLogic version info.", []string{"release_date", "version"}, nil)
-	omnilogicUp   = prometheus.NewDesc(prometheus.BuildFQName(namespace, "", "up"), "Was the last scrape of OmniLogic successful.", nil, nil)
+	omnilogicInfo   = prometheus.NewDesc(prometheus.BuildFQName(namespace, "version", "info"), "OmniLogic version info.", []string{"release_date", "version"}, nil)
+	omnilogicUp     = prometheus.NewDesc(prometheus.BuildFQName(namespace, "", "up"), "Was the last scrape of OmniLogic successful.", nil, nil)
+	omnilogicStatus = prometheus.NewDesc("omnilogic_system_status", "OmniLogic system status.", []string{"msp_system_id", "backyard_name"}, nil)
 )
 
 // Exporter collects OmniLogic stats from the given URI and exports them using
 // the prometheus metrics package.
 type Exporter struct {
-	URI       string
-	mutex     sync.RWMutex
-	fetchInfo func() (io.ReadCloser, error)
-	fetchStat func() (io.ReadCloser, error)
+	URI      string
+	session  *Session
+	sites    []*Site
+	userName string
+	password string
+	timeout  time.Duration
+	mutex    sync.RWMutex
 
-	up                             prometheus.Gauge
-	totalScrapes, xmlParseFailures prometheus.Counter
-	serverMetrics                  map[int]metricInfo
-	logger                         log.Logger
+	up                                            prometheus.Gauge
+	totalScrapes, xmlParseFailures, loginFailures prometheus.Counter
+	serverMetrics                                 map[int]metricInfo
+	logger                                        log.Logger
 }
 
 // NewExporter returns an initialized Exporter.
-func NewExporter(username string, password string, timeout time.Duration, logger log.Logger) (*Exporter, error) {
-	u, err := url.Parse("https://example.org/")
+func NewExporter(uri string, username string, password string, timeout time.Duration, logger log.Logger) (*Exporter, error) {
+	// Check that the provided uri is valid
+	_, err := url.Parse(uri)
 	if err != nil {
 		return nil, err
 	}
 
-	var fetchInfo func() (io.ReadCloser, error)
-	var fetchStat func() (io.ReadCloser, error)
-	switch u.Scheme {
-	case "http", "https", "file":
-		fetchStat = fetchHTTP("https://example.org/", true, timeout)
-	case "unix":
-		fetchInfo = fetchHTTP("https://example.org/", true, timeout)
-		fetchStat = fetchHTTP("https://example.org/", true, timeout)
-	default:
-		return nil, fmt.Errorf("unsupported scheme: %q", u.Scheme)
-	}
-
 	return &Exporter{
-		fetchInfo: fetchInfo,
-		fetchStat: fetchStat,
+		URI:      uri,
+		userName: username,
+		password: password,
+		timeout:  timeout,
 		up: prometheus.NewGauge(prometheus.GaugeOpts{
 			Namespace: namespace,
 			Name:      "up",
@@ -174,7 +175,12 @@ func NewExporter(username string, password string, timeout time.Duration, logger
 			Name:      "exporter_xml_parse_failures_total",
 			Help:      "Number of errors while parsing XML.",
 		}),
-		logger:               logger,
+		loginFailures: prometheus.NewCounter(prometheus.CounterOpts{
+			Namespace: namespace,
+			Name:      "exporter_login_failures_total",
+			Help:      "Number of errors while logging into Omnilogic.",
+		}),
+		logger: logger,
 	}, nil
 }
 
@@ -186,37 +192,297 @@ func (e *Exporter) Describe(ch chan<- *prometheus.Desc) {
 	}
 	ch <- omnilogicInfo
 	ch <- omnilogicUp
+	ch <- omnilogicStatus
 	ch <- e.totalScrapes.Desc()
 	ch <- e.xmlParseFailures.Desc()
+	ch <- e.loginFailures.Desc()
 }
 
+func (e *Exporter) Login() error {
+	loginRequest, err := e.buildLoginRequest()
 
-func fetchHTTP(uri string, sslVerify bool, timeout time.Duration) func() (io.ReadCloser, error) {
-	tr := &http.Transport{TLSClientConfig: &tls.Config{InsecureSkipVerify: !sslVerify}}
-	client := http.Client{
-		Timeout:   timeout,
-		Transport: tr,
+	if err != nil {
+		return err
 	}
 
-	return func() (io.ReadCloser, error) {
-		resp, err := client.Get(uri)
-		if err != nil {
-			return nil, err
+	client := &http.Client{
+		Timeout: e.timeout,
+	}
+
+	req, err := http.NewRequest("POST", e.URI, strings.NewReader(loginRequest))
+	req.Header.Add("cache-control", "no-cache")
+	req.Header.Add("content-type", "text/xml")
+
+	resp, err := client.Do(req)
+
+	if err != nil {
+		return err
+	}
+	if !(resp.StatusCode >= 200 && resp.StatusCode < 300) {
+		resp.Body.Close()
+		return fmt.Errorf("HTTP status %d", resp.StatusCode)
+	}
+
+	defer resp.Body.Close()
+	body, err := io.ReadAll(resp.Body)
+
+	if err != nil {
+		return err
+	}
+
+	e.session, err = parseLoginResponse(string(body))
+
+	if err != nil {
+		return err
+	}
+
+	switch e.session.Status {
+	case "0":
+		{
+			level.Info(e.logger).Log("msg", "Login successful.", "UserID", e.session.UserID)
 		}
-		if !(resp.StatusCode >= 200 && resp.StatusCode < 300) {
-			resp.Body.Close()
-			return nil, fmt.Errorf("HTTP status %d", resp.StatusCode)
+	case "4":
+		{
+			level.Warn(e.logger).Log("msg", "Login Failed: Incorrect UserName or Password.", "StatusMessage", e.session.StatusMessage)
 		}
-		return resp.Body, nil
+	default:
+		{
+			level.Warn(e.logger).Log("msg", "Login failed.", "StatusMessage", e.session.StatusMessage)
+		}
+	}
+
+	return nil
+}
+
+func (e *Exporter) RefreshSiteList() error {
+	siteListRequest, err := e.buildSiteListRequest()
+
+	if err != nil {
+		return err
+	}
+
+	client := &http.Client{
+		Timeout: e.timeout,
+	}
+
+	req, err := http.NewRequest("POST", e.URI, strings.NewReader(siteListRequest))
+	req.Header.Add("cache-control", "no-cache")
+	req.Header.Add("content-type", "text/xml")
+	req.Header.Add("Token", e.session.Token)
+
+	level.Debug(e.logger).Log("msg", "RefreshSiteList Request", "req.Header", req.Header, "req.Body", req.Body)
+
+	resp, err := client.Do(req)
+
+	if err != nil {
+		return err
+	}
+	if !(resp.StatusCode >= 200 && resp.StatusCode < 300) {
+		resp.Body.Close()
+		return fmt.Errorf("HTTP status %d", resp.StatusCode)
+	}
+
+	defer resp.Body.Close()
+	body, err := io.ReadAll(resp.Body)
+
+	level.Debug(e.logger).Log("msg", "RefreshSiteList Response", "resp.Header", resp.Header, "resp.Body", string(body))
+
+	if err != nil {
+		return err
+	}
+
+	e.sites, err = parseSiteListResponse(string(body))
+
+	if err != nil {
+		return err
+	}
+
+	level.Info(e.logger).Log("msg", "Refresh site list successful.", "# Sites", len(e.sites))
+
+	return nil
+}
+
+func (e *Exporter) buildSiteListRequest() (string, error) {
+	if e.session == nil || len(e.session.UserID) == 0 {
+		return "", errors.New("Session UserID is empty.")
+	}
+	userIDParameter := NewParameter("string", "UserID", e.session.UserID)
+	parameters := []*Parameter{userIDParameter}
+
+	return buildRequestXml("GetSiteList", parameters)
+}
+
+func parseSiteListResponse(response string) ([]*Site, error) {
+	siteListResponse, err := parseResponseXml(response)
+
+	if err != nil {
+		return nil, err
+	}
+
+	var status string
+	var statusMessage string
+	var sites []*Site
+
+	// Consider switching to xpath queries to avoid this loop nesting
+	for _, parameter := range siteListResponse.Parameters.Parameters {
+		switch parameter.Name {
+		case "Status":
+			status = parameter.Value
+		case "StatusMessage":
+			statusMessage = parameter.Value
+		case "List":
+			{
+				for _, item := range parameter.Items {
+					site := Site{}
+					for _, property := range item.Properties {
+						switch property.Name {
+						case "MspSystemID":
+							site.MspSystemID = property.Value
+						case "BackyardName":
+							site.BackyardName = property.Value
+						case "Address":
+							site.Address = property.Value
+						case "Status":
+							status, err := strconv.ParseFloat(property.Value, 64)
+							// TODO: Log the parsing failure.
+							if err == nil {
+								site.Status = status
+							}
+						} // Switch property name
+					} // for each property
+					sites = append(sites, &site)
+				} // for each item
+			} // Case "List"
+		} // Switch parameter name
+	} // for each parameter
+	if "0" != status {
+		return nil, fmt.Errorf("Received error when requesting site list: %v", statusMessage)
+	}
+
+	return sites, nil
+}
+
+type Site struct {
+	MspSystemID  string
+	BackyardName string
+	Address      string
+	Status       float64
+}
+
+func (e *Exporter) buildLoginRequest() (string, error) {
+	userNameParameter := NewParameter("string", "UserName", e.userName)
+	passwordParameter := NewParameter("string", "Password", e.password)
+	parameters := []*Parameter{userNameParameter, passwordParameter}
+
+	return buildRequestXml("Login", parameters)
+}
+
+func parseLoginResponse(response string) (*Session, error) {
+	loginResponse, err := parseResponseXml(response)
+
+	if err != nil {
+		return nil, err
+	}
+
+	session := Session{}
+
+	for _, parameter := range loginResponse.Parameters.Parameters {
+		switch parameter.Name {
+		case "Status":
+			session.Status = parameter.Value
+		case "StatusMessage":
+			session.StatusMessage = parameter.Value
+		case "UserID":
+			session.UserID = parameter.Value
+		case "Token":
+			session.Token = parameter.Value
+		}
+	}
+
+	return &session, nil
+
+}
+
+type Session struct {
+	UserID        string
+	Token         string
+	Status        string
+	StatusMessage string
+}
+
+func parseResponseXml(response string) (*Response, error) {
+	var responseXml Response
+
+	if err := xml.Unmarshal([]byte(response), &responseXml); err != nil {
+		return nil, err
+	}
+
+	return &responseXml, nil
+}
+
+func buildRequestXml(name string, parameters []*Parameter) (string, error) {
+	request := NewRequest(name, parameters)
+	result, err := xml.Marshal(request)
+	return string(result), err
+}
+
+func NewRequest(name string, parameters []*Parameter) *Request {
+	parametersXml := NewParameters(parameters)
+	return &Request{
+		Name:       name,
+		Parameters: *parametersXml,
 	}
 }
 
+func NewParameters(parameters []*Parameter) *Parameters {
+	return &Parameters{
+		Parameters: parameters,
+	}
+}
 
-func (e *Exporter) parseInfo(i io.Reader) (versionInfo, error) {
-	var version, releaseDate string
-	version = "1.2.3"
-	releaseDate = "now"
-	return versionInfo{ReleaseDate: releaseDate, Version: version}, nil //, s.Err()
+func NewParameter(DataType string, Name string, Value string) *Parameter {
+	return &Parameter{
+		DataType: DataType,
+		Name:     Name,
+		Value:    Value,
+	}
+}
+
+type Parameter struct {
+	XMLName  xml.Name `xml:"Parameter"`
+	Name     string   `xml:"name,attr"`
+	DataType string   `xml:"dataType,attr"`
+	Items    []*Item  `xml:"Item"`
+	Value    string   `xml:",chardata"`
+}
+
+type Parameters struct {
+	XMLName    xml.Name     `xml:"Parameters"`
+	Parameters []*Parameter `xml:"Parameter"`
+}
+
+type Item struct {
+	XMLName    xml.Name    `xml:"Item"`
+	Properties []*Property `xml:"Property"`
+}
+
+type Property struct {
+	XMLName  xml.Name `xml:"Property"`
+	Name     string   `xml:"name,attr"`
+	DataType string   `xml:"dataType,attr"`
+	Value    string   `xml:",chardata"`
+}
+
+type Request struct {
+	XMLName    xml.Name   `xml:"Request"`
+	Name       string     `xml:"Name"`
+	Parameters Parameters `xml:"Parameters"`
+}
+
+type Response struct {
+	XMLName    xml.Name   `xml:"Response"`
+	Name       string     `xml:"Name"`
+	Parameters Parameters `xml:"Parameters"`
 }
 
 // Collect fetches the stats from configured OmniLogic location and delivers them
@@ -230,34 +496,35 @@ func (e *Exporter) Collect(ch chan<- prometheus.Metric) {
 	ch <- prometheus.MustNewConstMetric(omnilogicUp, prometheus.GaugeValue, up)
 	ch <- e.totalScrapes
 	ch <- e.xmlParseFailures
+	ch <- e.loginFailures
 }
 
 func (e *Exporter) scrape(ch chan<- prometheus.Metric) (up float64) {
 	e.totalScrapes.Inc()
 	var err error
 
-	if e.fetchInfo != nil {
-		infoReader, err := e.fetchInfo()
+	// If not logged in, login.
+	if e.session == nil || e.session.Status != "0" {
+		err = e.Login()
+
 		if err != nil {
-			level.Error(e.logger).Log("msg", "Can't scrape OmniLogic", "err", err)
+			level.Error(e.logger).Log("msg", "Can't scrape OmniLogic. Login failed.", "err", err)
+			e.loginFailures.Inc()
 			return 0
 		}
-		defer infoReader.Close()
-
-		info, err := e.parseInfo(infoReader)
-		if err != nil {
-			level.Debug(e.logger).Log("msg", "Failed parsing show info", "err", err)
-		} else {
-			ch <- prometheus.MustNewConstMetric(omnilogicInfo, prometheus.GaugeValue, 1, info.ReleaseDate, info.Version)
-		}
 	}
 
-	body, err := e.fetchStat()
+	// Refresh list of Omnilogic sites and status
+	err = e.RefreshSiteList()
+
 	if err != nil {
-		level.Error(e.logger).Log("msg", "Can't scrape OmniLogic", "err", err)
+		level.Error(e.logger).Log("msg", "Can't scrape OmniLogic. Failed to refresh site list.", "err", err)
 		return 0
 	}
-	defer body.Close()
+
+	for _, site := range e.sites {
+		ch <- prometheus.MustNewConstMetric(omnilogicStatus, prometheus.GaugeValue, site.Status, site.MspSystemID, site.BackyardName)
+	}
 
 	return 1
 }
@@ -270,12 +537,13 @@ type versionInfo struct {
 func main() {
 
 	var (
-		webConfig                  = webflag.AddFlags(kingpin.CommandLine)
-		listenAddress              = kingpin.Flag("web.listen-address", "Address to listen on for web interface and telemetry.").Default(":9190").String()
-		metricsPath                = kingpin.Flag("web.telemetry-path", "Path under which to expose metrics.").Default("/metrics").String()
-		omniLogicTimeout           = kingpin.Flag("omnilogic.timeout", "Timeout for trying to get stats from OmniLogic.").Default("5s").Duration()
-		omniLogicUserName          = kingpin.Flag("omnilogic.username", "UserName to login to OmniLogic.").Required().String()
-		omniLogicPassword          = kingpin.Flag("omnilogic.password", "Password to login to OmniLogic.").Required().String()
+		webConfig         = webflag.AddFlags(kingpin.CommandLine)
+		listenAddress     = kingpin.Flag("web.listen-address", "Address to listen on for web interface and telemetry.").Default(":9190").String()
+		metricsPath       = kingpin.Flag("web.telemetry-path", "Path under which to expose metrics.").Default("/metrics").String()
+		omniLogicUrl      = kingpin.Flag("omnilogic.url", "The Omnilogic API URL.").Default("/metrics").Default(omnilogicUrl).String()
+		omniLogicTimeout  = kingpin.Flag("omnilogic.timeout", "Timeout for trying to get stats from OmniLogic.").Default("5s").Duration()
+		omniLogicUserName = kingpin.Flag("omnilogic.username", "UserName to login to OmniLogic.").Required().String()
+		omniLogicPassword = kingpin.Flag("omnilogic.password", "Password to login to OmniLogic.").Required().String()
 	)
 
 	promlogConfig := &promlog.Config{}
@@ -288,11 +556,12 @@ func main() {
 	level.Info(logger).Log("msg", "Starting omnilogic_exporter", "version", version.Info())
 	level.Info(logger).Log("msg", "Build context", "context", version.BuildContext())
 
-	exporter, err := NewExporter(*omniLogicUserName, *omniLogicPassword, *omniLogicTimeout, logger)
+	exporter, err := NewExporter(*omniLogicUrl, *omniLogicUserName, *omniLogicPassword, *omniLogicTimeout, logger)
 	if err != nil {
 		level.Error(logger).Log("msg", "Error creating an exporter", "err", err)
 		os.Exit(1)
 	}
+
 	prometheus.MustRegister(exporter)
 	prometheus.MustRegister(version.NewCollector("omnilogic_exporter"))
 

@@ -1,0 +1,16 @@
+# HELP omnilogic_exporter_login_failures_total Number of errors while logging into Omnilogic.
+# TYPE omnilogic_exporter_login_failures_total counter
+omnilogic_exporter_login_failures_total 0
+# HELP omnilogic_exporter_scrapes_total Current total OmniLogic scrapes.
+# TYPE omnilogic_exporter_scrapes_total counter
+omnilogic_exporter_scrapes_total 1
+# HELP omnilogic_exporter_xml_parse_failures_total Number of errors while parsing xml.
+# TYPE omnilogic_exporter_xml_parse_failures_total counter
+omnilogic_exporter_xml_parse_failures_total 0
+# HELP omnilogic_system_status OmniLogic system status.
+# TYPE omnilogic_system_status gauge
+omnilogic_system_status{backyard_name="Beach",msp_system_id="98765"} 1
+omnilogic_system_status{backyard_name="Home",msp_system_id="54321"} 2
+# HELP omnilogic_up Was the last scrape of OmniLogic successful.
+# TYPE omnilogic_up gauge
+omnilogic_up 1
