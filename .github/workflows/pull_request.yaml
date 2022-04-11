@@ -19,10 +19,10 @@ jobs:
         with:
           go-version: '>=1.18.0'
 
-      - name: Go Format
-        id: go_fmt
-        shell: bash
-        run: gofmt -d -e
+      # - name: Go Format
+      #   id: go_fmt
+      #   shell: bash
+      #   run: gofmt -d -e
 
       - name: Go Get
         id: go_get
