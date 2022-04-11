@@ -1,0 +1,40 @@
+name: Pull Request Validation
+
+on: [pull_request]
+
+jobs:
+  golang:
+    runs-on: ubuntu-latest
+    name: Golang
+    steps:
+      - name: Checkout
+        id: checkout
+        uses: actions/checkout@v3
+        with:
+          lfs: false
+
+      - name: Setup Go
+        id: setup
+        uses: actions/setup-go@v3
+          with:
+            go-version: '>=1.18.0'
+
+      - name: Go Format
+        id: go_fmt
+        shell: bash
+        run: go fmt -d -e
+
+      - name: Go Get
+        id: go_get
+        shell: bash
+        run: go get
+
+      - name: Go Build
+        id: go_build
+        shell: bash
+        run: go build
+
+      - name: Go Test
+        id: go_test
+        shell: bash
+        run: go test
