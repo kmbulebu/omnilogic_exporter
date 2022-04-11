@@ -227,3 +227,19 @@ func TestSiteStatusMetrics(t *testing.T) {
 
 	expectMetrics(t, exporter, "status.metrics", prometheus.BuildFQName(namespace, "site", "system_status"))
 }
+
+func TestTelemetryDataRequest(t *testing.T) {
+	exporter, err := NewExporter("https://example.org", "poolgal@example.org", "MyPassword", 1*time.Second, log.NewNopLogger())
+
+	if err != nil {
+		t.Fatal("Error creating Exporter.", err)
+	}
+
+	exporter.session = &Session{
+		UserID: "12345",
+	}
+
+	telemetryDataRequest, err := exporter.buildTelemetryDataRequest("54321")
+
+	expectFile(t, telemetryDataRequest, "get_telemetry_data_request.xml")
+}

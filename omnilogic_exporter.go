@@ -300,6 +300,64 @@ func (e *Exporter) RefreshSiteList() error {
 	return nil
 }
 
+func (e *Exporter) RefreshTelemetryData(ch chan<- prometheus.Metric) error {
+
+	for _, site := range e.sites {
+		ch <- prometheus.MustNewConstMetric(omnilogicStatus, prometheus.GaugeValue, site.Status, site.MspSystemID, site.BackyardName)
+
+		telemetryDataRequest, err := e.buildTelemetryDataRequest(site.MspSystemID)
+
+		if err != nil {
+			return err
+		}
+
+		client := &http.Client{
+			Timeout: e.timeout,
+		}
+
+		req, err := http.NewRequest("POST", e.URI, strings.NewReader(telemetryDataRequest))
+		req.Header.Add("cache-control", "no-cache")
+		req.Header.Add("content-type", "text/xml")
+		req.Header.Add("Token", e.session.Token)
+
+		level.Debug(e.logger).Log("msg", "RefreshTelemetryData Request", "MspSystemID", site.MspSystemID, "req.Header", req.Header, "req.Body", req.Body)
+
+		resp, err := client.Do(req)
+
+		if err != nil {
+			return err
+		}
+		if !(resp.StatusCode >= 200 && resp.StatusCode < 300) {
+			resp.Body.Close()
+			return fmt.Errorf("HTTP status %d", resp.StatusCode)
+		}
+
+		defer resp.Body.Close()
+		body, err := io.ReadAll(resp.Body)
+
+		level.Debug(e.logger).Log("msg", "RefreshTelemetryData Response", "resp.Header", resp.Header, "resp.Body", string(body))
+
+		if err != nil {
+			return err
+		}
+
+		level.Info(e.logger).Log("msg", "Refresh telemetry data successful.")
+
+	}
+
+	return nil
+}
+
+func (e *Exporter) buildTelemetryDataRequest(mspSystemId string) (string, error) {
+	if e.session == nil || len(e.session.UserID) == 0 {
+		return "", errors.New("Session UserID is empty.")
+	}
+	mspSystemIdParameter := NewParameter("int", "MspSystemID", mspSystemId)
+	parameters := []*Parameter{mspSystemIdParameter}
+
+	return buildRequestXml("GetTelemetryData", parameters)
+}
+
 func (e *Exporter) buildSiteListRequest() (string, error) {
 	if e.session == nil || len(e.session.UserID) == 0 {
 		return "", errors.New("Session UserID is empty.")
@@ -520,8 +578,11 @@ func (e *Exporter) scrape(ch chan<- prometheus.Metric) (up float64) {
 		return 0
 	}
 
-	for _, site := range e.sites {
-		ch <- prometheus.MustNewConstMetric(omnilogicStatus, prometheus.GaugeValue, site.Status, site.MspSystemID, site.BackyardName)
+	err = e.RefreshTelemetryData(ch)
+
+	if err != nil {
+		level.Error(e.logger).Log("msg", "Can't scrape OmniLogic. Failed to refresh telemetry data for sites.", "err", err)
+		return 0
 	}
 
 	return 1
