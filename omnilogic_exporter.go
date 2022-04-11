@@ -126,7 +126,7 @@ var (
 	}
 
 	omnilogicUp     = prometheus.NewDesc(prometheus.BuildFQName(namespace, "", "up"), "Was the last scrape of OmniLogic successful.", nil, nil)
-	omnilogicStatus = prometheus.NewDesc("omnilogic_system_status", "OmniLogic system status.", []string{"msp_system_id", "backyard_name"}, nil)
+	omnilogicStatus = prometheus.NewDesc(prometheus.BuildFQName(namespace, "site", "system_status"), "OmniLogic site system status.", []string{"msp_system_id", "backyard_name"}, nil)
 )
 
 // Exporter collects OmniLogic stats from the given URI and exports them using

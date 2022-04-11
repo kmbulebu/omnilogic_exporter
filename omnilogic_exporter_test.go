@@ -225,5 +225,5 @@ func TestSiteStatusMetrics(t *testing.T) {
 		t.Fatal("Error creating Exporter.", err)
 	}
 
-	expectMetrics(t, exporter, "status.metrics", "omnilogic_system_status")
+	expectMetrics(t, exporter, "status.metrics", prometheus.BuildFQName(namespace, "site", "system_status"))
 }
