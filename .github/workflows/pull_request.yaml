@@ -22,7 +22,7 @@ jobs:
       - name: Go Format
         id: go_fmt
         shell: bash
-        run: go fmt -d -e
+        run: gofmt -d -e
 
       - name: Go Get
         id: go_get
