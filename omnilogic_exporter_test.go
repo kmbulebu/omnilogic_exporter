@@ -225,5 +225,5 @@ func TestSiteStatusMetrics(t *testing.T) {
 		t.Fatal("Error creating Exporter.", err)
 	}
 
-	expectMetrics(t, exporter, "status.metrics")
+	expectMetrics(t, exporter, "status.metrics", "omnilogic_system_status")
 }

@@ -125,7 +125,6 @@ var (
 		61: newServerMetric("http_total_time_average_seconds", "Avg. HTTP total time for last 1024 successful connections.", prometheus.GaugeValue, nil),
 	}
 
-	omnilogicInfo   = prometheus.NewDesc(prometheus.BuildFQName(namespace, "version", "info"), "OmniLogic version info.", []string{"release_date", "version"}, nil)
 	omnilogicUp     = prometheus.NewDesc(prometheus.BuildFQName(namespace, "", "up"), "Was the last scrape of OmniLogic successful.", nil, nil)
 	omnilogicStatus = prometheus.NewDesc("omnilogic_system_status", "OmniLogic system status.", []string{"msp_system_id", "backyard_name"}, nil)
 )
@@ -190,7 +189,6 @@ func (e *Exporter) Describe(ch chan<- *prometheus.Desc) {
 	for _, m := range e.serverMetrics {
 		ch <- m.Desc
 	}
-	ch <- omnilogicInfo
 	ch <- omnilogicUp
 	ch <- omnilogicStatus
 	ch <- e.totalScrapes.Desc()
