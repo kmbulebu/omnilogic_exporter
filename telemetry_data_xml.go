@@ -2,7 +2,9 @@ package main
 
 import (
 	"encoding/xml"
+	"regexp"
 	"strconv"
+	"strings"
 
 	"github.com/iancoleman/strcase"
 	"github.com/prometheus/client_golang/prometheus"
@@ -76,15 +78,32 @@ func parseTelemetryDataResponse(response string) (*Status, error) {
 
 func buildMetrics(ch chan<- prometheus.Metric, telemetryDataResponse Status) error {
 	items := telemetryDataResponse.DataItems
+
+	floatRegex, _ := regexp.Compile("^[+-]?([0-9]+([.][0-9]*)?|[.][0-9]+)$")
+
+	yesNoRegex, _ := regexp.Compile("^(?:yes|no)$")
+
 	for _, item := range items {
 		for k, v := range item.attributes {
-			// Build name
-			// I'm thinking we build a map and store it as a global. Wrap it with a function.
-			// The key is the name of the metric, built from the Omnilogic status row.
-			// The value is the Metric.
+
+			// If it has a value, try and parse it.
 			if len(v) > 0 {
-				floatValue, err := strconv.ParseFloat(v, 64)
-				if err == nil {
+
+				if floatRegex.MatchString(v) {
+					// It's a number, treat as a guage.
+					// We have to assume the number can go up or down.
+					floatValue, err := strconv.ParseFloat(v, 64)
+					if err == nil {
+						gaugeMetric := getGaugeMetric(namespace, item.name, k, item.systemId)
+						gaugeMetric.Set(floatValue)
+						ch <- gaugeMetric
+					}
+				} else if yesNoRegex.MatchString(strings.ToLower(v)) {
+					// Matches yes or no, treat as a guage with a value of 1 or 0.
+					floatValue := 0.0
+					if strings.ToLower(v) == "yes" {
+						floatValue = 1.0
+					}
 					gaugeMetric := getGaugeMetric(namespace, item.name, k, item.systemId)
 					gaugeMetric.Set(floatValue)
 					ch <- gaugeMetric
