@@ -132,6 +132,11 @@ func (e *Exporter) Login() error {
 	}
 
 	req, err := http.NewRequest("POST", e.URI, strings.NewReader(loginRequest))
+
+	if err != nil {
+		return err
+	}
+
 	req.Header.Add("cache-control", "no-cache")
 	req.Header.Add("content-type", "text/xml")
 
@@ -188,6 +193,11 @@ func (e *Exporter) RefreshSiteList() error {
 	}
 
 	req, err := http.NewRequest("POST", e.URI, strings.NewReader(siteListRequest))
+
+	if err != nil {
+		return err
+	}
+
 	req.Header.Add("cache-control", "no-cache")
 	req.Header.Add("content-type", "text/xml")
 	req.Header.Add("Token", e.session.Token)
@@ -240,6 +250,11 @@ func (e *Exporter) RefreshTelemetryData(ch chan<- prometheus.Metric) error {
 		}
 
 		req, err := http.NewRequest("POST", e.URI, strings.NewReader(telemetryDataRequest))
+
+		if err != nil {
+			return err
+		}
+
 		req.Header.Add("cache-control", "no-cache")
 		req.Header.Add("content-type", "text/xml")
 		req.Header.Add("Token", e.session.Token)
@@ -271,7 +286,7 @@ func (e *Exporter) RefreshTelemetryData(ch chan<- prometheus.Metric) error {
 			return err
 		}
 
-		err = buildMetrics(ch, *status)
+		err = buildMetrics(ch, site.MspSystemID, *status)
 
 		if err != nil {
 			return err
@@ -348,7 +363,7 @@ func parseSiteListResponse(response string) ([]*Site, error) {
 		} // Switch parameter name
 	} // for each parameter
 	if "0" != status {
-		return nil, fmt.Errorf("Received error when requesting site list: %v", statusMessage)
+		return nil, fmt.Errorf("received error when requesting site list: %v", statusMessage)
 	}
 
 	return sites, nil

@@ -14,13 +14,16 @@ var (
 	gaugeMetrics = map[string]prometheus.Gauge{}
 )
 
-func getGaugeMetric(namespace string, subsystem string, name string, systemId string) prometheus.Gauge {
-	key := prometheus.BuildFQName(namespace, subsystem, name) + "_" + systemId
+func getGaugeMetric(namespace string, subsystem string, name string, mspSystemId, itemSystemId string) prometheus.Gauge {
+	key := prometheus.BuildFQName(namespace, subsystem, name) + "_" + itemSystemId
 	gauge, exists := gaugeMetrics[key]
 	if !exists {
 		labels := map[string]string{}
-		if len(systemId) > 0 {
-			labels["systemId"] = systemId
+		if len(itemSystemId) > 0 {
+			labels["system_id"] = itemSystemId
+		}
+		if len(mspSystemId) > 0 {
+			labels["msp_system_id"] = mspSystemId
 		}
 		opts := prometheus.GaugeOpts{
 			Namespace:   namespace,
@@ -76,7 +79,7 @@ func parseTelemetryDataResponse(response string) (*Status, error) {
 	return &statusXml, nil
 }
 
-func buildMetrics(ch chan<- prometheus.Metric, telemetryDataResponse Status) error {
+func buildMetrics(ch chan<- prometheus.Metric, mspSystemId string, telemetryDataResponse Status) error {
 	items := telemetryDataResponse.DataItems
 
 	floatRegex, _ := regexp.Compile("^[+-]?([0-9]+([.][0-9]*)?|[.][0-9]+)$")
@@ -94,7 +97,7 @@ func buildMetrics(ch chan<- prometheus.Metric, telemetryDataResponse Status) err
 					// We have to assume the number can go up or down.
 					floatValue, err := strconv.ParseFloat(v, 64)
 					if err == nil {
-						gaugeMetric := getGaugeMetric(namespace, item.name, k, item.systemId)
+						gaugeMetric := getGaugeMetric(namespace, item.name, k, mspSystemId, item.systemId)
 						gaugeMetric.Set(floatValue)
 						ch <- gaugeMetric
 					}
@@ -104,7 +107,7 @@ func buildMetrics(ch chan<- prometheus.Metric, telemetryDataResponse Status) err
 					if strings.ToLower(v) == "yes" {
 						floatValue = 1.0
 					}
-					gaugeMetric := getGaugeMetric(namespace, item.name, k, item.systemId)
+					gaugeMetric := getGaugeMetric(namespace, item.name, k, mspSystemId, item.systemId)
 					gaugeMetric.Set(floatValue)
 					ch <- gaugeMetric
 				}
