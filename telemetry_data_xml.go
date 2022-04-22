@@ -2,9 +2,36 @@ package main
 
 import (
 	"encoding/xml"
+	"strconv"
 
 	"github.com/iancoleman/strcase"
+	"github.com/prometheus/client_golang/prometheus"
 )
+
+var (
+	gaugeMetrics = map[string]prometheus.Gauge{}
+)
+
+func getGaugeMetric(namespace string, subsystem string, name string, systemId string) prometheus.Gauge {
+	key := prometheus.BuildFQName(namespace, subsystem, name) + "_" + systemId
+	gauge, exists := gaugeMetrics[key]
+	if !exists {
+		labels := map[string]string{}
+		if len(systemId) > 0 {
+			labels["systemId"] = systemId
+		}
+		opts := prometheus.GaugeOpts{
+			Namespace:   namespace,
+			Subsystem:   subsystem,
+			Name:        name,
+			Help:        "",
+			ConstLabels: labels,
+		}
+		gauge = prometheus.NewGauge(opts)
+		gaugeMetrics[key] = gauge
+	}
+	return gauge
+}
 
 type Status struct {
 	XMLName   xml.Name            `xml:"STATUS"`
@@ -45,4 +72,26 @@ func parseTelemetryDataResponse(response string) (*Status, error) {
 	}
 
 	return &statusXml, nil
+}
+
+func buildMetrics(ch chan<- prometheus.Metric, telemetryDataResponse Status) error {
+	items := telemetryDataResponse.DataItems
+	for _, item := range items {
+		for k, v := range item.attributes {
+			// Build name
+			// I'm thinking we build a map and store it as a global. Wrap it with a function.
+			// The key is the name of the metric, built from the Omnilogic status row.
+			// The value is the Metric.
+			if len(v) > 0 {
+				floatValue, err := strconv.ParseFloat(v, 64)
+				if err == nil {
+					gaugeMetric := getGaugeMetric(namespace, item.name, k, item.systemId)
+					gaugeMetric.Set(floatValue)
+					ch <- gaugeMetric
+				}
+			}
+
+		}
+	}
+	return nil
 }

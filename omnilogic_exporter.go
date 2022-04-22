@@ -14,21 +14,14 @@
 package main
 
 import (
-	// "bufio"
-
+	"encoding/xml"
 	"errors"
-
-	// "errors"
 	"fmt"
 	"io"
-
-	// "net"
-	"encoding/xml"
 	"net/http"
 	_ "net/http/pprof"
 	"net/url"
 	"os"
-	"sort"
 	"strconv"
 	"strings"
 	"sync"
@@ -37,8 +30,6 @@ import (
 	"github.com/go-kit/log"
 	"github.com/go-kit/log/level"
 	"github.com/prometheus/client_golang/prometheus"
-
-	// "github.com/prometheus/client_golang/prometheus/collectors"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/prometheus/common/promlog"
 	"github.com/prometheus/common/promlog/flag"
@@ -57,74 +48,7 @@ var (
 	serverLabelNames = []string{"backend", "server"}
 )
 
-type metricInfo struct {
-	Desc *prometheus.Desc
-	Type prometheus.ValueType
-}
-
-func newServerMetric(metricName string, docString string, t prometheus.ValueType, constLabels prometheus.Labels) metricInfo {
-	return metricInfo{
-		Desc: prometheus.NewDesc(
-			prometheus.BuildFQName(namespace, "server", metricName),
-			docString,
-			serverLabelNames,
-			constLabels,
-		),
-		Type: t,
-	}
-}
-
-type metrics map[int]metricInfo
-
-func (m metrics) String() string {
-	keys := make([]int, 0, len(m))
-	for k := range m {
-		keys = append(keys, k)
-	}
-	sort.Ints(keys)
-	s := make([]string, len(keys))
-	for i, k := range keys {
-		s[i] = strconv.Itoa(k)
-	}
-	return strings.Join(s, ",")
-}
-
 var (
-	serverMetrics = metrics{
-		2:  newServerMetric("current_queue", "Current number of queued requests assigned to this server.", prometheus.GaugeValue, nil),
-		3:  newServerMetric("max_queue", "Maximum observed number of queued requests assigned to this server.", prometheus.GaugeValue, nil),
-		4:  newServerMetric("current_sessions", "Current number of active sessions.", prometheus.GaugeValue, nil),
-		5:  newServerMetric("max_sessions", "Maximum observed number of active sessions.", prometheus.GaugeValue, nil),
-		6:  newServerMetric("limit_sessions", "Configured session limit.", prometheus.GaugeValue, nil),
-		7:  newServerMetric("sessions_total", "Total number of sessions.", prometheus.CounterValue, nil),
-		8:  newServerMetric("bytes_in_total", "Current total of incoming bytes.", prometheus.CounterValue, nil),
-		9:  newServerMetric("bytes_out_total", "Current total of outgoing bytes.", prometheus.CounterValue, nil),
-		13: newServerMetric("connection_errors_total", "Total of connection errors.", prometheus.CounterValue, nil),
-		14: newServerMetric("response_errors_total", "Total of response errors.", prometheus.CounterValue, nil),
-		15: newServerMetric("retry_warnings_total", "Total of retry warnings.", prometheus.CounterValue, nil),
-		16: newServerMetric("redispatch_warnings_total", "Total of redispatch warnings.", prometheus.CounterValue, nil),
-		17: newServerMetric("up", "Current health status of the server (1 = UP, 0 = DOWN).", prometheus.GaugeValue, nil),
-		18: newServerMetric("weight", "Current weight of the server.", prometheus.GaugeValue, nil),
-		21: newServerMetric("check_failures_total", "Total number of failed health checks.", prometheus.CounterValue, nil),
-		24: newServerMetric("downtime_seconds_total", "Total downtime in seconds.", prometheus.CounterValue, nil),
-		30: newServerMetric("server_selected_total", "Total number of times a server was selected, either for new sessions, or when re-dispatching.", prometheus.CounterValue, nil),
-		33: newServerMetric("current_session_rate", "Current number of sessions per second over last elapsed second.", prometheus.GaugeValue, nil),
-		35: newServerMetric("max_session_rate", "Maximum observed number of sessions per second.", prometheus.GaugeValue, nil),
-		38: newServerMetric("check_duration_seconds", "Previously run health check duration, in seconds", prometheus.GaugeValue, nil),
-		39: newServerMetric("http_responses_total", "Total of HTTP responses.", prometheus.CounterValue, prometheus.Labels{"code": "1xx"}),
-		40: newServerMetric("http_responses_total", "Total of HTTP responses.", prometheus.CounterValue, prometheus.Labels{"code": "2xx"}),
-		41: newServerMetric("http_responses_total", "Total of HTTP responses.", prometheus.CounterValue, prometheus.Labels{"code": "3xx"}),
-		42: newServerMetric("http_responses_total", "Total of HTTP responses.", prometheus.CounterValue, prometheus.Labels{"code": "4xx"}),
-		43: newServerMetric("http_responses_total", "Total of HTTP responses.", prometheus.CounterValue, prometheus.Labels{"code": "5xx"}),
-		44: newServerMetric("http_responses_total", "Total of HTTP responses.", prometheus.CounterValue, prometheus.Labels{"code": "other"}),
-		49: newServerMetric("client_aborts_total", "Total number of data transfers aborted by the client.", prometheus.CounterValue, nil),
-		50: newServerMetric("server_aborts_total", "Total number of data transfers aborted by the server.", prometheus.CounterValue, nil),
-		58: newServerMetric("http_queue_time_average_seconds", "Avg. HTTP queue time for last 1024 successful connections.", prometheus.GaugeValue, nil),
-		59: newServerMetric("http_connect_time_average_seconds", "Avg. HTTP connect time for last 1024 successful connections.", prometheus.GaugeValue, nil),
-		60: newServerMetric("http_response_time_average_seconds", "Avg. HTTP response time for last 1024 successful connections.", prometheus.GaugeValue, nil),
-		61: newServerMetric("http_total_time_average_seconds", "Avg. HTTP total time for last 1024 successful connections.", prometheus.GaugeValue, nil),
-	}
-
 	omnilogicUp     = prometheus.NewDesc(prometheus.BuildFQName(namespace, "", "up"), "Was the last scrape of OmniLogic successful.", nil, nil)
 	omnilogicStatus = prometheus.NewDesc(prometheus.BuildFQName(namespace, "site", "system_status"), "OmniLogic site system status.", []string{"msp_system_id", "backyard_name"}, nil)
 )
@@ -142,7 +66,6 @@ type Exporter struct {
 
 	up                                            prometheus.Gauge
 	totalScrapes, xmlParseFailures, loginFailures prometheus.Counter
-	serverMetrics                                 map[int]metricInfo
 	logger                                        log.Logger
 }
 
@@ -185,16 +108,17 @@ func NewExporter(uri string, username string, password string, timeout time.Dura
 
 // Describe describes all the metrics ever exported by the OmniLogic exporter. It
 // implements prometheus.Collector.
+// Leaving this as an unchecked collector.
 func (e *Exporter) Describe(ch chan<- *prometheus.Desc) {
-	for _, m := range e.serverMetrics {
-		ch <- m.Desc
-	}
-	ch <- omnilogicUp
-	ch <- omnilogicStatus
-	ch <- e.totalScrapes.Desc()
-	ch <- e.xmlParseFailures.Desc()
-	ch <- e.loginFailures.Desc()
 }
+
+// func (e *Exporter) Describe(ch chan<- *prometheus.Desc) {
+// 	ch <- omnilogicUp
+// 	ch <- omnilogicStatus
+// 	ch <- e.totalScrapes.Desc()
+// 	ch <- e.xmlParseFailures.Desc()
+// 	ch <- e.loginFailures.Desc()
+// }
 
 func (e *Exporter) Login() error {
 	loginRequest, err := e.buildLoginRequest()
@@ -336,6 +260,18 @@ func (e *Exporter) RefreshTelemetryData(ch chan<- prometheus.Metric) error {
 		body, err := io.ReadAll(resp.Body)
 
 		level.Debug(e.logger).Log("msg", "RefreshTelemetryData Response", "resp.Header", resp.Header, "resp.Body", string(body))
+
+		if err != nil {
+			return err
+		}
+
+		status, err := parseTelemetryDataResponse(string(body))
+
+		if err != nil {
+			return err
+		}
+
+		err = buildMetrics(ch, *status)
 
 		if err != nil {
 			return err
