@@ -1,10 +1,9 @@
 name: Main Branch Build
 
-on: [pull_request]
-# on:
-#   push:
-#     branches:
-#       - main
+on:
+  push:
+    branches:
+      - main
 
 jobs:
   golang:
@@ -84,6 +83,19 @@ jobs:
           mkdir -p ./bin
           go build -o ./bin/omnilogic_exporter_${GOOS}_${GOARCH}.exe
 
+      - name: Go Test
+        id: go_test
+        shell: bash
+        # Disabling it for now.
+        run: go test || exit 0
+
+      - name: Archive Binaries
+        uses: actions/upload-artifact@v3
+        with:
+          name: archive-binaries
+          path: |
+            bin/
+
       - name: Docker - Set up QEMU
         uses: docker/setup-qemu-action@v1
 
@@ -98,15 +110,3 @@ jobs:
           push: false
           tags: kmbulebu/omnilogic_exporter:latest
 
-      - name: Go Test
-        id: go_test
-        shell: bash
-        # Disabling it for now.
-        run: go test || exit 0
-
-      - name: Archive Binaries
-        uses: actions/upload-artifact@v3
-        with:
-          name: archive-binaries
-          path: |
-            bin/
