@@ -115,3 +115,7 @@ jobs:
           push: false
           tags: kmbulebu/omnilogic_exporter:latest
 
+      - name: Docker Test
+        run: |
+          docker run --rm -it kmbulebu/omnilogic_exporter:latest --help
+
