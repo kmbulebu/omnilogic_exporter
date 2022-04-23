@@ -1,12 +1,9 @@
-ARG ARCH="amd64"
-ARG OS="linux"
-FROM quay.io/prometheus/busybox-${OS}-${ARCH}:latest
-LABEL maintainer="The Prometheus Authors <prometheus-developers@googlegroups.com>"
+FROM quay.io/prometheus/busybox:latest
 
-ARG ARCH="amd64"
-ARG OS="linux"
-COPY .build/${OS}-${ARCH}/omnilogic_exporter /bin/omnilogic_exporter
+ARG TARGETARCH
+ARG TARGETOS
+COPY ./bin/omnilogic_exporter_${TARGETOS}_${TARGETARCH} /bin/omnilogic_exporter
 
-EXPOSE      9101
+EXPOSE      9190
 USER        nobody
 ENTRYPOINT  [ "/bin/omnilogic_exporter" ]
