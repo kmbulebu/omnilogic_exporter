@@ -28,13 +28,13 @@ core developers are accessible via the Prometheus Developers [mailinglist][].
 ### Building
 
 ```bash
-make build
+go build
 ```
 
 ### Testing
 
 ```bash
-make test
+go test
 ```
 
 ### TLS and basic authentication
