@@ -1,0 +1,4 @@
+# HELP omnilogic_site_system_status OmniLogic site system status.
+# TYPE omnilogic_site_system_status gauge
+omnilogic_site_system_status{backyard_name="Beach",msp_system_id="98765"} 1
+omnilogic_site_system_status{backyard_name="Home",msp_system_id="54321"} 2

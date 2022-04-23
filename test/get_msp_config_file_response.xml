@@ -1,0 +1,408 @@
+<Response>
+    <MSPConfig>
+        <System>
+            <Msp-Vsp-Speed-Format>Percent</Msp-Vsp-Speed-Format>
+            <Msp-Time-Format>12 Hour Format</Msp-Time-Format>
+            <Units>Standard</Units>
+            <Msp-Chlor-Display>Salt</Msp-Chlor-Display>
+            <Msp-Language>English</Msp-Language>
+            <UI-Display-Mode>standard</UI-Display-Mode>
+            <UI-MoodColor-Enabled>Yes</UI-MoodColor-Enabled>
+            <UI-Heater-SimpleMode>Yes</UI-Heater-SimpleMode>
+            <UI-Filter-SimpleMode>Yes</UI-Filter-SimpleMode>
+            <UI-Lights-SimpleMode>Yes</UI-Lights-SimpleMode>
+        </System>
+        <Backyard>
+            MSP Configuration
+            <System-Id>0</System-Id>
+            <Name>Backyard</Name>
+            <Service-Mode-Timeout>0</Service-Mode-Timeout>
+            <Sensor>
+                <System-Id>7</System-Id>
+                <Name>AirSensor</Name>
+                <Type>SENSOR_AIR_TEMP</Type>
+                <Units>UNITS_FAHRENHEIT</Units>
+            </Sensor>
+            <Body-of-water>
+                01
+                <System-Id>1</System-Id>
+                <Name>Pool</Name>
+                <Type>BOW_POOL</Type>
+                <Shared-Type>BOW_NO_EQUIPMENT_SHARED</Shared-Type>
+                <Shared-Priority>SHARED_EQUIPMENT_LOW_PRIORITY</Shared-Priority>
+                <Shared-Equipment-System-ID>0</Shared-Equipment-System-ID>
+                <Supports-Spillover>no</Supports-Spillover>
+                <Size-In-Gallons>20000</Size-In-Gallons>
+                <Filter>
+                    <System-Id>2</System-Id>
+                    <Name>Filter Pump</Name>
+                    <Shared-Type>BOW_NO_EQUIPMENT_SHARED</Shared-Type>
+                    <Filter-Type>FMT_VARIABLE_SPEED_PUMP</Filter-Type>
+                    <Max-Pump-Speed>100</Max-Pump-Speed>
+                    <Min-Pump-Speed>18</Min-Pump-Speed>
+                    <Max-Pump-RPM>3450</Max-Pump-RPM>
+                    <Min-Pump-RPM>600</Min-Pump-RPM>
+                    <Priming-Enabled>no</Priming-Enabled>
+                    <Vsp-Low-Pump-Speed>18</Vsp-Low-Pump-Speed>
+                    <Vsp-Medium-Pump-Speed>50</Vsp-Medium-Pump-Speed>
+                    <Vsp-High-Pump-Speed>100</Vsp-High-Pump-Speed>
+                    <Vsp-Custom-Pump-Speed>71</Vsp-Custom-Pump-Speed>
+                    <Freeze-Protect-Override-Interval>7200</Freeze-Protect-Override-Interval>
+                </Filter>
+                <Chlorinator>
+                    <System-Id>3</System-Id>
+                    <Name>Chlorinator</Name>
+                    <Shared-Type>BOW_NO_EQUIPMENT_SHARED</Shared-Type>
+                    <Enabled>yes</Enabled>
+                    <Mode>CHLOR_OP_MODE_TIMED</Mode>
+                    <Timed-Percent>30</Timed-Percent>
+                    <SuperChlor-Timeout>72</SuperChlor-Timeout>
+                    <Cell-Type>CELL_TYPE_T15</Cell-Type>
+                    <Salt-Monitor>LOW_SALT</Salt-Monitor>
+                    <Dispenser-Type>SALT_DISPENSING</Dispenser-Type>
+                    <Operation>
+                        PEO_CHLORINATOR_EQUIPMENT
+                        <Chlorinator-Equipment>
+                            <System-Id>4</System-Id>
+                            <Name>Chlorinator1</Name>
+                            <Type>PET_CHLORINATOR</Type>
+                            <Chlorinator-Type>CHLOR_TYPE_MAIN_PANEL</Chlorinator-Type>
+                            <Enabled>yes</Enabled>
+                        </Chlorinator-Equipment>
+                    </Operation>
+                </Chlorinator>
+                <Relay>
+                    <System-Id>5</System-Id>
+                    <Name>Fountain</Name>
+                    <Type>RLY_VALVE_ACTUATOR</Type>
+                    <Function>RLY_WATER_FEATURE</Function>
+                </Relay>
+                <ColorLogic-Light>
+                    <System-Id>6</System-Id>
+                    <Name>UCL</Name>
+                    <Type>COLOR_LOGIC_UCL</Type>
+                </ColorLogic-Light>
+                <Sensor>
+                    <System-Id>8</System-Id>
+                    <Name>WaterSensor</Name>
+                    <Type>SENSOR_WATER_TEMP</Type>
+                    <Units>UNITS_FAHRENHEIT</Units>
+                </Sensor>
+                <Sensor>
+                    <System-Id>9</System-Id>
+                    <Name>FlowSensor</Name>
+                    <Type>SENSOR_FLOW</Type>
+                    <Units>UNITS_ACTIVE_INACTIVE</Units>
+                </Sensor>
+                <Heater>
+                    <System-Id>22</System-Id>
+                    <Shared-Type>BOW_NO_EQUIPMENT_SHARED</Shared-Type>
+                    <Enabled>yes</Enabled>
+                    <Current-Set-Point>90</Current-Set-Point>
+                    <Max-Water-Temp>104</Max-Water-Temp>
+                    <Min-Settable-Water-Temp>55</Min-Settable-Water-Temp>
+                    <Max-Settable-Water-Temp>90</Max-Settable-Water-Temp>
+                    <Operation>
+                        PEO_HEATER_EQUIPMENT
+                        <Heater-Equipment>
+                            <System-Id>23</System-Id>
+                            <Name>Heat Pump</Name>
+                            <Type>PET_HEATER</Type>
+                            <Heater-Type>HTR_HEAT_PUMP</Heater-Type>
+                            <Enabled>yes</Enabled>
+                            <Priority>HTR_PRIORITY_2</Priority>
+                            <Run-For-Priority>HTR_MAINTAINS_PRIORITY_FOR_AS_LONG_AS_VALID</Run-For-Priority>
+                            <Shared-Equipment-System-ID>-1</Shared-Equipment-System-ID>
+                        </Heater-Equipment>
+                    </Operation>
+                </Heater>
+                <Relay>
+                    <System-Id>24</System-Id>
+                    <Name>Bubblers</Name>
+                    <Type>RLY_VALVE_ACTUATOR</Type>
+                    <Function>RLY_FOUNTAIN</Function>
+                </Relay>
+            </Body-of-water>
+        </Backyard>
+        <Schedules>
+            <sche>
+                <bow-system-id>1</bow-system-id>
+                <equipment-id>2</equipment-id>
+                <schedule-system-id>15</schedule-system-id>
+                <event>164</event>
+                <data>80</data>
+                <enabled>0</enabled>
+                <start-minute>0</start-minute>
+                <start-hour>11</start-hour>
+                <end-minute>0</end-minute>
+                <end-hour>19</end-hour>
+                <days-active>4</days-active>
+                <recurring>1</recurring>
+            </sche>
+            <sche>
+                <bow-system-id>1</bow-system-id>
+                <equipment-id>2</equipment-id>
+                <schedule-system-id>18</schedule-system-id>
+                <event>164</event>
+                <data>100</data>
+                <enabled>0</enabled>
+                <start-minute>0</start-minute>
+                <start-hour>14</start-hour>
+                <end-minute>0</end-minute>
+                <end-hour>15</end-hour>
+                <days-active>127</days-active>
+                <recurring>1</recurring>
+            </sche>
+            <sche>
+                <bow-system-id>1</bow-system-id>
+                <equipment-id>6</equipment-id>
+                <schedule-system-id>19</schedule-system-id>
+                <event>164</event>
+                <data>7</data>
+                <enabled>1</enabled>
+                <start-minute>30</start-minute>
+                <start-hour>19</start-hour>
+                <end-minute>30</end-minute>
+                <end-hour>22</end-hour>
+                <days-active>127</days-active>
+                <recurring>1</recurring>
+            </sche>
+            <sche>
+                <bow-system-id>1</bow-system-id>
+                <equipment-id>2</equipment-id>
+                <schedule-system-id>25</schedule-system-id>
+                <event>164</event>
+                <data>80</data>
+                <enabled>0</enabled>
+                <start-minute>0</start-minute>
+                <start-hour>0</start-hour>
+                <end-minute>59</end-minute>
+                <end-hour>23</end-hour>
+                <days-active>96</days-active>
+                <recurring>1</recurring>
+            </sche>
+        </Schedules>
+        <Favorites>
+            <Favorite>
+                <System-Id>21</System-Id>
+                <Index-Id>1</Index-Id>
+                <EquipmentID-Or-ThemeID>20</EquipmentID-Or-ThemeID>
+                <Sequence>0</Sequence>
+                <Data>268435455</Data>
+                <SimpleModeEnabled>1</SimpleModeEnabled>
+            </Favorite>
+            <Favorite>
+                <System-Id>27</System-Id>
+                <Index-Id>2</Index-Id>
+                <EquipmentID-Or-ThemeID>26</EquipmentID-Or-ThemeID>
+                <Sequence>1</Sequence>
+                <Data>268435455</Data>
+                <SimpleModeEnabled>1</SimpleModeEnabled>
+            </Favorite>
+        </Favorites>
+        <Groups>
+            <Group>
+                <System-Id>20</System-Id>
+                <Name>Winter</Name>
+                <Icon-Id>0</Icon-Id>
+                <Request>
+                    <Name>TurnOnOffForGroup</Name>
+                    <Parameters>
+                        <Parameter name="PoolID" dataType="int">1</Parameter>
+                        <Parameter name="EquipmentID" dataType="int">2</Parameter>
+                        <Parameter name="Data" dataType="int">0</Parameter>
+                        <Parameter name="LightState" dataType="int">0</Parameter>
+                    </Parameters>
+                </Request>
+                <Request>
+                    <Name>SetUISuperCHLORCmd</Name>
+                    <Parameters>
+                        <Parameter name="PoolID" dataType="int">1</Parameter>
+                        <Parameter name="EquipmentID" dataType="int">3</Parameter>
+                        <Parameter name="IsOn" dataType="int">0</Parameter>
+                    </Parameters>
+                </Request>
+                <Request>
+                    <Name>TurnOnOffForGroup</Name>
+                    <Parameters>
+                        <Parameter name="PoolID" dataType="int">1</Parameter>
+                        <Parameter name="EquipmentID" dataType="int">5</Parameter>
+                        <Parameter name="Data" dataType="int">0</Parameter>
+                        <Parameter name="LightState" dataType="int">0</Parameter>
+                    </Parameters>
+                </Request>
+                <Request>
+                    <Name>TurnOnOffForGroup</Name>
+                    <Parameters>
+                        <Parameter name="PoolID" dataType="int">1</Parameter>
+                        <Parameter name="EquipmentID" dataType="int">6</Parameter>
+                        <Parameter name="Data" dataType="int">263174</Parameter>
+                        <Parameter name="LightState" dataType="int">1</Parameter>
+                    </Parameters>
+                </Request>
+            </Group>
+            <Group>
+                <System-Id>26</System-Id>
+                <Name>Decalcify</Name>
+                <Icon-Id>0</Icon-Id>
+                <Request>
+                    <Name>TurnOnOffForGroup</Name>
+                    <Parameters>
+                        <Parameter name="PoolID" dataType="int">1</Parameter>
+                        <Parameter name="EquipmentID" dataType="int">2</Parameter>
+                        <Parameter name="Data" dataType="int">50</Parameter>
+                        <Parameter name="LightState" dataType="int">0</Parameter>
+                    </Parameters>
+                </Request>
+                <Request>
+                    <Name>SetUISuperCHLORCmd</Name>
+                    <Parameters>
+                        <Parameter name="PoolID" dataType="int">1</Parameter>
+                        <Parameter name="EquipmentID" dataType="int">3</Parameter>
+                        <Parameter name="IsOn" dataType="int">0</Parameter>
+                    </Parameters>
+                </Request>
+                <Request>
+                    <Name>TurnOnOffForGroup</Name>
+                    <Parameters>
+                        <Parameter name="PoolID" dataType="int">1</Parameter>
+                        <Parameter name="EquipmentID" dataType="int">5</Parameter>
+                        <Parameter name="Data" dataType="int">0</Parameter>
+                        <Parameter name="LightState" dataType="int">0</Parameter>
+                    </Parameters>
+                </Request>
+                <Request>
+                    <Name>TurnOnOffForGroup</Name>
+                    <Parameters>
+                        <Parameter name="PoolID" dataType="int">1</Parameter>
+                        <Parameter name="EquipmentID" dataType="int">6</Parameter>
+                        <Parameter name="Data" dataType="int">263175</Parameter>
+                        <Parameter name="LightState" dataType="int">1</Parameter>
+                    </Parameters>
+                </Request>
+                <Request>
+                    <Name>SetHeaterScheduleAltCmd</Name>
+                    <Parameters>
+                        <Parameter name="PoolID" dataType="int">1</Parameter>
+                        <Parameter name="HeaterID" dataType="int">22</Parameter>
+                        <Parameter name="Data1" dataType="byte">90</Parameter>
+                        <Parameter name="Data2" dataType="byte">90</Parameter>
+                        <Parameter name="Data3" dataType="byte">0</Parameter>
+                        <Parameter name="Data4" dataType="byte">0</Parameter>
+                        <Parameter name="IsCountDownTimer" dataType="bool">0</Parameter>
+                        <Parameter name="StartTimeHours" dataType="int">0</Parameter>
+                        <Parameter name="StartTimeMinutes" dataType="int">0</Parameter>
+                        <Parameter name="EndTimeHours" dataType="int">0</Parameter>
+                        <Parameter name="EndTimeMinutes" dataType="int">0</Parameter>
+                        <Parameter name="DaysActive" dataType="int">0</Parameter>
+                        <Parameter name="Recurring" dataType="bool">0</Parameter>
+                    </Parameters>
+                </Request>
+                <Request>
+                    <Name>SetUITemporaryHeaterPriorityCmd</Name>
+                    <Parameters>
+                        <Parameter name="PoolID" dataType="int">1</Parameter>
+                        <Parameter name="HeaterID1" dataType="int">23</Parameter>
+                        <Parameter name="HeaterID2" dataType="int">-1</Parameter>
+                        <Parameter name="HeaterID3" dataType="int">-1</Parameter>
+                        <Parameter name="HeaterID4" dataType="int">-1</Parameter>
+                        <Parameter name="HeaterID5" dataType="int">-1</Parameter>
+                    </Parameters>
+                </Request>
+                <Request>
+                    <Name>SetUITemporaryHeaterMaintainPriorityCmd</Name>
+                    <Parameters>
+                        <Parameter name="PoolID" dataType="int">1</Parameter>
+                        <Parameter name="HeaterID" dataType="int">22</Parameter>
+                        <Parameter name="Priority1MaintainFor" dataType="byte">24</Parameter>
+                        <Parameter name="Priority2MaintainFor" dataType="byte">255</Parameter>
+                        <Parameter name="Priority3MaintainFor" dataType="byte">255</Parameter>
+                        <Parameter name="Priority4MaintainFor" dataType="byte">255</Parameter>
+                        <Parameter name="Priority5MaintainFor" dataType="byte">255</Parameter>
+                    </Parameters>
+                </Request>
+                <Request>
+                    <Name>SetUITemporaryHeaterEnable</Name>
+                    <Parameters>
+                        <Parameter name="PoolID" dataType="int">1</Parameter>
+                        <Parameter name="HeaterID" dataType="int">22</Parameter>
+                        <Parameter name="Enabled" dataType="int">0</Parameter>
+                    </Parameters>
+                </Request>
+                <Request>
+                    <Name>SetUITemporaryHeaterEnable</Name>
+                    <Parameters>
+                        <Parameter name="PoolID" dataType="int">1</Parameter>
+                        <Parameter name="HeaterID" dataType="int">23</Parameter>
+                        <Parameter name="Enabled" dataType="int">1</Parameter>
+                    </Parameters>
+                </Request>
+                <Request>
+                    <Name>TurnOnOffForGroup</Name>
+                    <Parameters>
+                        <Parameter name="PoolID" dataType="int">1</Parameter>
+                        <Parameter name="EquipmentID" dataType="int">24</Parameter>
+                        <Parameter name="Data" dataType="int">0</Parameter>
+                        <Parameter name="LightState" dataType="int">0</Parameter>
+                    </Parameters>
+                </Request>
+            </Group>
+        </Groups>
+    </MSPConfig>
+    <MSPAPI version="0.4" latestversion="0.4">
+        <Device-APIs>
+            <API System-Id="20" OpType="ON_OFF" ref="RunGroupCmd" ThemeID="20" IsOn="API::STATUS::Group::groupState" />
+            <API System-Id="26" OpType="ON_OFF" ref="RunGroupCmd" ThemeID="26" IsOn="API::STATUS::Group::groupState" />
+            <API System-Id="2" OpType="ON_OFF" ref="SetUIEquipmentCmd" EquipmentID="2" IsOn="API::STATUS::Filter::filterSpeed" />
+            <API System-Id="22" OpType="ON_OFF" ref="SetHeaterEnable" HeaterID="22" />
+            <API System-Id="22" OpType="SETPOINT" ref="SetUIHeaterCmd" HeaterID="22" Temp="API::STATUS::VirtualHeater::Current-Set-Point" />
+            <API System-Id="3" OpType="ON_OFF" ref="SetCHLOREnable" Enabled="API::CONFIG::Chlorinator::Enabled" />
+            <API System-Id="3" OpType="CHL_PARAMETERS" ref="SetCHLORParams" ChlorID="3" OpMode="API::CONFIG::Chlorinator::Mode" CellType="API::CONFIG::Chlorinator::Cell-Type" TimedPercent="API::CONFIG::Chlorinator::Timed-Percent" SCTimeout="API::CONFIG::Chlorinator::SuperChlor-Timeout" ORPTimout="API::CONFIG::Chlorinator::ORPTimout" />
+            <API System-Id="5" OpType="ON_OFF" ref="SetUIEquipmentCmd" EquipmentID="5" IsOn="API::STATUS::Relay::relayState" />
+            <API System-Id="24" OpType="ON_OFF" ref="SetUIEquipmentCmd" EquipmentID="24" IsOn="API::STATUS::Relay::relayState" />
+            <API System-Id="6" OpType="ON_OFF" ref="SetUIEquipmentCmd" EquipmentID="6" IsOn="API::STATUS::ColorLogic-Light::lightState" />
+            <API System-Id="6" OpType="ON_SETPOINT" ref="SetStandAloneLightShowV2" LightID="6" Show="API::STATUS::ColorLogic-Light::currentShow" Speed="API::STATUS::ColorLogic-Light::speed" Brightness="API::STATUS::ColorLogic-Light::brightness" />
+            <API System-Id="0" OpType="CSAD_MODE" ref="UISetCSADMode" CSADID="0" Mode="API::STATUS::CSAD::mode" />
+            <API System-Id="0" OpType="CSAD_CALIBRATION" ref="UISetCSADTargetValue" CSADID="0" Mode="API::STATUS::CSAD::ph" />
+        </Device-APIs>
+        <Favorite-APIs>
+            <API Favorite-Id="20" ref="RunGroupCmd" OpType="ON_OFF" ThemeID="20" IsOn="API::STATUS::Group::groupState" />
+            <API Favorite-Id="26" ref="RunGroupCmd" OpType="ON_OFF" ThemeID="26" IsOn="API::STATUS::Group::groupState" />
+            <API Favorite-Id="2" ref="SetUIEquipmentCmd" OpType="ON_OFF" EquipmentID="2" IsOn="API::STATUS::Filter::filterState" />
+            <API Favorite-Id="22" ref="API::GOTOFEATURE" />
+            <API Favorite-Id="1" ref="SetHeaterEnable" HeaterID="22" />
+            <API Favorite-Id="3" ref="SetCHLORParams" OpType="CHL_PARAMETERS" ChlorID="3" OpMode="API::CONFIG::Chlorinator::Mode" CellType="API::CONFIG::Chlorinator::Cell-Type" TimedPercent="API::CONFIG::Chlorinator::Timed-Percent" SCTimeout="API::CONFIG::Chlorinator::SuperChlor-Timeout" ORPTimout="API::CONFIG::Chlorinator::ORPTimout" />
+            <API Favorite-Id="3" ref="API::GOTOFEATURE" />
+            <API Favorite-Id="5" ref="SetUIEquipmentCmd" OpType="ON_OFF" EquipmentID="5" />
+            <API Favorite-Id="24" ref="SetUIEquipmentCmd" OpType="ON_OFF" EquipmentID="24" />
+            <API Favorite-Id="6" ref="SetStandAloneLightShowV2" OpType="ON_SETPOINT" LightID="6" Show="API::CONFIG::Favorite::Data" Speed="API::CONFIG::Favorite::Data2" Brightness="API::CONFIG::Favorite::Data3" />
+            <API Favorite-Id="0" ref="API::GOTOFEATURE" />
+        </Favorite-APIs>
+        <Schedule-APIs>
+            <API System-Id="20" OpType="CREATE_SCHEDULE" ref="CreateUIScheduleCmd" EquipmentID="20" Data="1" ActionID="317" />
+            <API System-Id="20" OpType="EDIT_SCHEDULE" ref="EditUIScheduleCmd" EquipmentID="API::CONFIG::sche::schedule-system-id" Data="1" ActionID="317" />
+            <API System-Id="20" OpType="REMOVE_SCHEDULE" ref="DeleteUIScheduleCmd" ScheduleSystemID="API::CONFIG::sche::schedule-system-id" />
+            <API System-Id="26" OpType="CREATE_SCHEDULE" ref="CreateUIScheduleCmd" EquipmentID="26" Data="1" ActionID="317" />
+            <API System-Id="26" OpType="EDIT_SCHEDULE" ref="EditUIScheduleCmd" EquipmentID="API::CONFIG::sche::schedule-system-id" Data="1" ActionID="317" />
+            <API System-Id="26" OpType="REMOVE_SCHEDULE" ref="DeleteUIScheduleCmd" ScheduleSystemID="API::CONFIG::sche::schedule-system-id" />
+            <API System-Id="2" OpType="CREATE_SCHEDULE" ref="CreateUIScheduleCmd" EquipmentID="2" Data="API::STATUS::Filter::filterSpeed" ActionID="164" />
+            <API System-Id="2" OpType="EDIT_SCHEDULE" ref="EditUIScheduleCmd" EquipmentID="API::CONFIG::sche::schedule-system-id" Data="API::STATUS::Filter::filterSpeed" ActionID="164" />
+            <API System-Id="2" OpType="REMOVE_SCHEDULE" ref="DeleteUIScheduleCmd" ScheduleSystemID="API::CONFIG::sche::schedule-system-id" />
+            <API System-Id="22" OpType="CREATE_SCHEDULE" ref="CreateUIScheduleCmd" EquipmentID="22" Data="API::STATUS::VirtualHeater::Current-Set-Point" ActionID="315" />
+            <API System-Id="22" OpType="EDIT_SCHEDULE" ref="EditUIScheduleCmd" EquipmentID="API::CONFIG::sche::schedule-system-id" Data="API::STATUS::VirtualHeater::Current-Set-Point" ActionID="315" />
+            <API System-Id="22" OpType="REMOVE_SCHEDULE" ref="DeleteUIScheduleCmd" ScheduleSystemID="API::CONFIG::sche::schedule-system-id" />
+            <API System-Id="3" OpType="CREATE_SCHEDULE" ref="CreateUIScheduleCmd" EquipmentID="3" Data="API::CONFIG::Chlorinator::Timed-Percent" ActionID="164" />
+            <API System-Id="3" OpType="EDIT_SCHEDULE" ref="EditUIScheduleCmd" EquipmentID="API::CONFIG::sche::schedule-system-id" Data="API::CONFIG::Chlorinator::Timed-Percent" ActionID="164" />
+            <API System-Id="3" OpType="REMOVE_SCHEDULE" ref="DeleteUIScheduleCmd" ScheduleSystemID="API::CONFIG::sche::schedule-system-id" />
+            <API System-Id="5" OpType="CREATE_SCHEDULE" ref="CreateUIScheduleCmd" EquipmentID="5" Data="1" ActionID="164" />
+            <API System-Id="5" OpType="EDIT_SCHEDULE" ref="EditUIScheduleCmd" EquipmentID="API::CONFIG::sche::schedule-system-id" Data="1" ActionID="164" />
+            <API System-Id="5" OpType="REMOVE_SCHEDULE" ref="DeleteUIScheduleCmd" ScheduleSystemID="API::CONFIG::sche::schedule-system-id" />
+            <API System-Id="24" OpType="CREATE_SCHEDULE" ref="CreateUIScheduleCmd" EquipmentID="24" Data="1" ActionID="164" />
+            <API System-Id="24" OpType="EDIT_SCHEDULE" ref="EditUIScheduleCmd" EquipmentID="API::CONFIG::sche::schedule-system-id" Data="1" ActionID="164" />
+            <API System-Id="24" OpType="REMOVE_SCHEDULE" ref="DeleteUIScheduleCmd" ScheduleSystemID="API::CONFIG::sche::schedule-system-id" />
+            <API System-Id="6" OpType="CREATE_SCHEDULE" ref="CreateUIScheduleAltCmd" EquipmentID="6" Show="API::STATUS::ColorLogic-Light::currentShow" Speed="API::STATUS::ColorLogic-Light::speed" Brightness="API::STATUS::ColorLogic-Light::brightness" Data4="0" ActionID="308" />
+            <API System-Id="6" OpType="EDIT_SCHEDULE" ref="EditUIScheduleAltCmd" EquipmentID="API::CONFIG::sche::schedule-system-id" Show="API::STATUS::ColorLogic-Light::currentShow" Speed="API::STATUS::ColorLogic-Light::speed" Brightness="API::STATUS::ColorLogic-Light::brightness" Data4="0" ActionID="308" />
+            <API System-Id="6" OpType="REMOVE_SCHEDULE" ref="DeleteUIScheduleCmd" ScheduleSystemID="API::CONFIG::sche::schedule-system-id" />
+        </Schedule-APIs>
+    </MSPAPI>
+</Response>

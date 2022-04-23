@@ -1,0 +1,17 @@
+# HELP omnilogic_exporter_csv_parse_failures_total Number of errors while parsing CSV.
+# TYPE omnilogic_exporter_csv_parse_failures_total counter
+omnilogic_exporter_csv_parse_failures_total 0
+# HELP omnilogic_exporter_scrapes_total Current total OmniLogic scrapes.
+# TYPE omnilogic_exporter_scrapes_total counter
+omnilogic_exporter_scrapes_total 1
+# HELP omnilogic_up Was the last scrape of OmniLogic successful.
+# TYPE omnilogic_up gauge
+omnilogic_up 0
+# HELP omnilogic_system_status Current system status code
+# TYPE omnilogic_system_status guage
+omnilogic_system_status{msp_system_id="98765",backyard_name="Beach"} 1
+omnilogic_system_status{msp_system_id="54321",backyard_name="Home"} 2
+# HELP air_temperature_degrees Current air temperature at the Omnilogic Panel
+# TYPE air_temperature_degrees guage
+air_temperature_degrees{msp_system_id="54321"} 75
+air_temperature_degrees{msp_system_id="98765"} 90

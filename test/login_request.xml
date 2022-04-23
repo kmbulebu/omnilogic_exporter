@@ -1,0 +1,1 @@
+<Request><Name>Login</Name><Parameters><Parameter name="UserName" dataType="string">poolgal@example.org</Parameter><Parameter name="Password" dataType="string">MyPassword</Parameter></Parameters></Request>

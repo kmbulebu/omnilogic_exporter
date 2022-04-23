@@ -1,0 +1,14 @@
+<STATUS version="1.0">
+    <Backyard systemId="54321" statusVersion="8" airTemp="53" status="2" state="1" configUpdatedTime="2022-04-04T16:06:59.254Z" datetime="2022-04-04T23:03:35.299" />
+    <BodyOfWater systemId="1" flow="1" waterTemp="74" />
+    <Filter systemId="2" valvePosition="1" filterSpeed="71" filterState="1" lastSpeed="71" />
+    <VirtualHeater systemId="22" Current-Set-Point="90" enable="yes" />
+    <Heater systemId="23" heaterState="1" enable="yes" />
+    <Chlorinator systemId="3" operatingMode="1" Timed-Percent="30" scMode="0" chlrError="0" chlrAlert="0" avgSaltLevel="2785" instantSaltLevel="2618" status="128" />
+    <Relay systemId="5" relayState="0" />
+    <Relay systemId="24" relayState="0" />
+    <ColorLogic-Light systemId="6" lightState="0" currentShow="7" />
+    <CSAD systemId="0" ph="" orp="" status="0" mode="0" />
+    <Group systemId="20" groupState="0" />
+    <Group systemId="26" groupState="0" />
+</STATUS>

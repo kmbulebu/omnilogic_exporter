@@ -1,0 +1,21 @@
+<Response>
+    <Name>GetSiteList</Name>
+    <Parameters>
+        <Parameter dataType="int" name="Status">0</Parameter>
+        <Parameter dataType="int" name="StatusMessage">Successfully</Parameter>
+        <Parameter dataType="object" name="List">
+            <Item>
+                <Property name="MspSystemID" dataType="int">54321</Property>
+                <Property name="BackyardName" dataType="string">Home</Property>
+                <Property name="Address" dataType="string">1600 Pennsylvania Avenue, NW Washington, DC, United States</Property>
+                <Property name="Status" dataType="string">2</Property>
+            </Item>
+            <Item>
+                <Property name="MspSystemID" dataType="int">98765</Property>
+                <Property name="BackyardName" dataType="string">Beach</Property>
+                <Property name="Address" dataType="string">101 Oceanfront Lane, Virginia, VA, United States</Property>
+                <Property name="Status" dataType="string">1</Property>
+            </Item>
+        </Parameter>
+    </Parameters>
+</Response>

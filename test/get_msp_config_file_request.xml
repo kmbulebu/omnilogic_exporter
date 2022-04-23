@@ -1,0 +1,1 @@
+<Request><Name>GetMspConfigFile</Name><Parameters><Parameter name="MspSystemID" dataType="int">54321</Parameter><Parameter name="Version" dataType="int">0</Parameter></Parameters></Request>
