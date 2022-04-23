@@ -33,6 +33,8 @@ jobs:
       - name: Go Build
         id: go_build
         shell: bash
+        env:
+          CGO_ENABLED: 0
         run: go build
 
       - name: Go Test
