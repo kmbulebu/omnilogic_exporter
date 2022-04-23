@@ -117,5 +117,5 @@ jobs:
 
       - name: Docker Test
         run: |
-          docker run --rm -it kmbulebu/omnilogic_exporter:latest --help
+          docker run --rm kmbulebu/omnilogic_exporter:latest --help
 
