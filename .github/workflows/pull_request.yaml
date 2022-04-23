@@ -19,10 +19,11 @@ jobs:
         with:
           go-version: '>=1.18.0'
 
-      # - name: Go Format
-      #   id: go_fmt
-      #   shell: bash
-      #   run: gofmt -d -e
+      - name: Go Format
+        id: go_fmt
+        shell: bash
+        # Disabling it for now.
+        run: gofmt -d -e || exit 0
 
       - name: Go Get
         id: go_get

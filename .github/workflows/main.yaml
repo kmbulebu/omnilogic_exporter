@@ -1,0 +1,98 @@
+name: Main Branch Build
+
+on: [pull_request]
+# on:
+#   push:
+#     branches:
+#       - main
+
+jobs:
+  golang:
+    runs-on: ubuntu-latest
+    name: Golang
+    steps:
+      - name: Checkout
+        id: checkout
+        uses: actions/checkout@v3
+        with:
+          lfs: false
+
+      - name: Setup Go
+        id: setup
+        uses: actions/setup-go@v3
+        with:
+          go-version: '>=1.18.0'
+
+      - name: Go Format
+        id: go_fmt
+        shell: bash
+        # Disabling it for now.
+        run: gofmt -d -e || exit 0
+
+      - name: Go Get
+        id: go_get
+        shell: bash
+        run: go get
+
+      - name: Go Build Linux x86
+        id: go_build_linux_amd64
+        shell: bash
+        env:
+          GOOS: linux
+          GOARCH: amd64
+        run: -
+          mkdir -p ./bin
+          go build -o ./bin/omnilogic_exporter_${GOOS}_${GOARCH}
+
+      - name: Go Build Linux arm64
+        id: go_build_linux_arm64
+        shell: bash
+        env:
+          GOOS: linux
+          GOARCH: arm64
+        run: -
+          mkdir -p ./bin
+          go build -o ./bin/omnilogic_exporter_${GOOS}_${GOARCH}
+
+      - name: Go Build Darwin(MacOS) amd64
+        id: go_build_darwin_amd64
+        shell: bash
+        env:
+          GOOS: darwin
+          GOARCH: amd64
+        run: -
+          mkdir -p ./bin
+          go build -o ./bin/omnilogic_exporter_${GOOS}_${GOARCH}
+
+      - name: Go Build Darwin(MacOS) arm64
+        id: go_build_darwin_arm64
+        shell: bash
+        env:
+          GOOS: darwin
+          GOARCH: arm64
+        run: -
+          mkdir -p ./bin
+          go build -o ./bin/omnilogic_exporter_${GOOS}_${GOARCH}
+
+      - name: Go Build Windows amd64
+        id: go_build_windows_amd64
+        shell: bash
+        env:
+          GOOS: windows
+          GOARCH: amd64
+        run: -
+          mkdir -p ./bin
+          go build -o ./bin/omnilogic_exporter_${GOOS}_${GOARCH}.exe
+
+      - name: Go Test
+        id: go_test
+        shell: bash
+        # Disabling it for now.
+        run: go test || exit 0
+
+      - name: Archive Binaries
+        uses: actions/upload-artifact@v3
+        with:
+          name: archive-binaries
+          path: |
+            bin/
