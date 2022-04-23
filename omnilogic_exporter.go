@@ -45,10 +45,6 @@ const (
 )
 
 var (
-	serverLabelNames = []string{"backend", "server"}
-)
-
-var (
 	omnilogicUp     = prometheus.NewDesc(prometheus.BuildFQName(namespace, "", "up"), "Was the last scrape of OmniLogic successful.", nil, nil)
 	omnilogicStatus = prometheus.NewDesc(prometheus.BuildFQName(namespace, "site", "system_status"), "OmniLogic site system status.", []string{"msp_system_id", "backyard_name"}, nil)
 )
@@ -112,14 +108,6 @@ func NewExporter(uri string, username string, password string, timeout time.Dura
 func (e *Exporter) Describe(ch chan<- *prometheus.Desc) {
 }
 
-// func (e *Exporter) Describe(ch chan<- *prometheus.Desc) {
-// 	ch <- omnilogicUp
-// 	ch <- omnilogicStatus
-// 	ch <- e.totalScrapes.Desc()
-// 	ch <- e.xmlParseFailures.Desc()
-// 	ch <- e.loginFailures.Desc()
-// }
-
 func (e *Exporter) Login() error {
 	loginRequest, err := e.buildLoginRequest()
 
@@ -181,7 +169,7 @@ func (e *Exporter) Login() error {
 	return nil
 }
 
-func (e *Exporter) RefreshSiteList() error {
+func (e *Exporter) RefreshSiteList(ch chan<- prometheus.Metric) error {
 	siteListRequest, err := e.buildSiteListRequest()
 
 	if err != nil {
@@ -229,6 +217,10 @@ func (e *Exporter) RefreshSiteList() error {
 		return err
 	}
 
+	for _, site := range e.sites {
+		ch <- prometheus.MustNewConstMetric(omnilogicStatus, prometheus.GaugeValue, site.Status, site.MspSystemID, site.BackyardName)
+	}
+
 	level.Info(e.logger).Log("msg", "Refresh site list successful.", "# Sites", len(e.sites))
 
 	return nil
@@ -237,8 +229,6 @@ func (e *Exporter) RefreshSiteList() error {
 func (e *Exporter) RefreshTelemetryData(ch chan<- prometheus.Metric) error {
 
 	for _, site := range e.sites {
-		ch <- prometheus.MustNewConstMetric(omnilogicStatus, prometheus.GaugeValue, site.Status, site.MspSystemID, site.BackyardName)
-
 		telemetryDataRequest, err := e.buildTelemetryDataRequest(site.MspSystemID)
 
 		if err != nil {
@@ -301,7 +291,7 @@ func (e *Exporter) RefreshTelemetryData(ch chan<- prometheus.Metric) error {
 
 func (e *Exporter) buildTelemetryDataRequest(mspSystemId string) (string, error) {
 	if e.session == nil || len(e.session.UserID) == 0 {
-		return "", errors.New("Session UserID is empty.")
+		return "", errors.New("session UserID is empty")
 	}
 	mspSystemIdParameter := NewParameter("int", "MspSystemID", mspSystemId)
 	parameters := []*Parameter{mspSystemIdParameter}
@@ -311,7 +301,7 @@ func (e *Exporter) buildTelemetryDataRequest(mspSystemId string) (string, error)
 
 func (e *Exporter) buildSiteListRequest() (string, error) {
 	if e.session == nil || len(e.session.UserID) == 0 {
-		return "", errors.New("Session UserID is empty.")
+		return "", errors.New("session UserID is empty")
 	}
 	userIDParameter := NewParameter("string", "UserID", e.session.UserID)
 	parameters := []*Parameter{userIDParameter}
@@ -362,7 +352,7 @@ func parseSiteListResponse(response string) ([]*Site, error) {
 			} // Case "List"
 		} // Switch parameter name
 	} // for each parameter
-	if "0" != status {
+	if status != "0" {
 		return nil, fmt.Errorf("received error when requesting site list: %v", statusMessage)
 	}
 
@@ -522,7 +512,7 @@ func (e *Exporter) scrape(ch chan<- prometheus.Metric) (up float64) {
 	}
 
 	// Refresh list of Omnilogic sites and status
-	err = e.RefreshSiteList()
+	err = e.RefreshSiteList(ch)
 
 	if err != nil {
 		level.Error(e.logger).Log("msg", "Can't scrape OmniLogic. Failed to refresh site list.", "err", err)
@@ -537,11 +527,6 @@ func (e *Exporter) scrape(ch chan<- prometheus.Metric) (up float64) {
 	}
 
 	return 1
-}
-
-type versionInfo struct {
-	ReleaseDate string
-	Version     string
 }
 
 func main() {
