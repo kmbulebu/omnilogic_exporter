@@ -40,7 +40,7 @@ jobs:
         env:
           GOOS: linux
           GOARCH: amd64
-        run: -
+        run: |
           mkdir -p ./bin
           go build -o ./bin/omnilogic_exporter_${GOOS}_${GOARCH}
 
@@ -50,7 +50,7 @@ jobs:
         env:
           GOOS: linux
           GOARCH: arm64
-        run: -
+        run: |
           mkdir -p ./bin
           go build -o ./bin/omnilogic_exporter_${GOOS}_${GOARCH}
 
@@ -60,7 +60,7 @@ jobs:
         env:
           GOOS: darwin
           GOARCH: amd64
-        run: -
+        run: |
           mkdir -p ./bin
           go build -o ./bin/omnilogic_exporter_${GOOS}_${GOARCH}
 
@@ -70,7 +70,7 @@ jobs:
         env:
           GOOS: darwin
           GOARCH: arm64
-        run: -
+        run: |
           mkdir -p ./bin
           go build -o ./bin/omnilogic_exporter_${GOOS}_${GOARCH}
 
@@ -80,7 +80,7 @@ jobs:
         env:
           GOOS: windows
           GOARCH: amd64
-        run: -
+        run: |
           mkdir -p ./bin
           go build -o ./bin/omnilogic_exporter_${GOOS}_${GOARCH}.exe
 
