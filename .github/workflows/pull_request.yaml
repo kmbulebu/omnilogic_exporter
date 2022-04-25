@@ -30,12 +30,16 @@ jobs:
         shell: bash
         run: go get
 
-      - name: Go Build
-        id: go_build
+      - name: Go Build Linux x86
+        id: go_build_linux_amd64
         shell: bash
         env:
+          GOOS: linux
+          GOARCH: amd64
           CGO_ENABLED: 0
-        run: go build
+        run: |
+          mkdir -p ./bin
+          go build -o ./bin/omnilogic_exporter_${GOOS}_${GOARCH}
 
       - name: Go Test
         id: go_test
