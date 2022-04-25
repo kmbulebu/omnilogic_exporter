@@ -71,6 +71,10 @@ jobs:
           cache-to: type=local,dest=/tmp/.buildx-cache-new
           tags: kmbulebu/omnilogic_exporter:pr
 
+      - name: Docker Test
+        run: |
+          docker run --rm kmbulebu/omnilogic_exporter:pr --help
+
         # This ugly bit is necessary if you don't want your cache to grow forever
         # till it hits GitHub's limit of 5GB.
         # Temp fix
@@ -80,8 +84,3 @@ jobs:
         run: |
           rm -rf /tmp/.buildx-cache
           mv /tmp/.buildx-cache-new /tmp/.buildx-cache
-
-      - name: Docker Test
-        run: |
-          docker run --rm kmbulebu/omnilogic_exporter:pr --help
-
