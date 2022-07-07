@@ -119,6 +119,8 @@ func (e *Exporter) Login() error {
 		Timeout: e.timeout,
 	}
 
+	level.Debug(e.logger).Log("msg", "Login Request Body", "loginRequest", loginRequest)
+
 	req, err := http.NewRequest("POST", e.URI, strings.NewReader(loginRequest))
 
 	if err != nil {
@@ -128,11 +130,16 @@ func (e *Exporter) Login() error {
 	req.Header.Add("cache-control", "no-cache")
 	req.Header.Add("content-type", "text/xml")
 
+	level.Debug(e.logger).Log("msg", "Login Request Headers", "req.Header", fmt.Sprint(req.Header))
+
 	resp, err := client.Do(req)
 
 	if err != nil {
 		return err
 	}
+
+	level.Debug(e.logger).Log("msg", "Login Response Status Code", "resp.StatusCode", fmt.Sprint(resp.StatusCode))
+
 	if !(resp.StatusCode >= 200 && resp.StatusCode < 300) {
 		resp.Body.Close()
 		return fmt.Errorf("HTTP status %d", resp.StatusCode)
@@ -150,6 +157,9 @@ func (e *Exporter) Login() error {
 	if err != nil {
 		return err
 	}
+
+	level.Debug(e.logger).Log("msg", "Login Response Headers", "resp.Header", fmt.Sprint(resp.Header))
+	level.Debug(e.logger).Log("msg", "Login Response Body", "resp.Body", string(body))
 
 	switch e.session.Status {
 	case "0":
@@ -180,6 +190,7 @@ func (e *Exporter) RefreshSiteList(ch chan<- prometheus.Metric) error {
 		Timeout: e.timeout,
 	}
 
+	level.Debug(e.logger).Log("msg", "RefreshSiteList Request Body", "siteListRequest", siteListRequest)
 	req, err := http.NewRequest("POST", e.URI, strings.NewReader(siteListRequest))
 
 	if err != nil {
@@ -190,13 +201,16 @@ func (e *Exporter) RefreshSiteList(ch chan<- prometheus.Metric) error {
 	req.Header.Add("content-type", "text/xml")
 	req.Header.Add("Token", e.session.Token)
 
-	level.Debug(e.logger).Log("msg", "RefreshSiteList Request", "req.Header", req.Header, "req.Body", req.Body)
+	level.Debug(e.logger).Log("msg", "RefreshSiteList Request Headers", "req.Header", fmt.Sprint(req.Header))
 
 	resp, err := client.Do(req)
 
 	if err != nil {
 		return err
 	}
+
+	level.Debug(e.logger).Log("msg", "RefreshSiteList Response Status Code", "resp.StatusCode", fmt.Sprint(resp.StatusCode))
+
 	if !(resp.StatusCode >= 200 && resp.StatusCode < 300) {
 		resp.Body.Close()
 		return fmt.Errorf("HTTP status %d", resp.StatusCode)
@@ -205,11 +219,12 @@ func (e *Exporter) RefreshSiteList(ch chan<- prometheus.Metric) error {
 	defer resp.Body.Close()
 	body, err := io.ReadAll(resp.Body)
 
-	level.Debug(e.logger).Log("msg", "RefreshSiteList Response", "resp.Header", resp.Header, "resp.Body", string(body))
-
 	if err != nil {
 		return err
 	}
+
+	level.Debug(e.logger).Log("msg", "RefreshSiteList Response Headers", "resp.Header", fmt.Sprint(resp.Header))
+	level.Debug(e.logger).Log("msg", "RefreshSiteList Response Body", "resp.Body", string(body))
 
 	e.sites, err = parseSiteListResponse(string(body))
 
@@ -238,7 +253,7 @@ func (e *Exporter) RefreshTelemetryData(ch chan<- prometheus.Metric) error {
 		client := &http.Client{
 			Timeout: e.timeout,
 		}
-
+		level.Debug(e.logger).Log("msg", "RefreshTelemetryData Request Body", "siteListRequest", telemetryDataRequest)
 		req, err := http.NewRequest("POST", e.URI, strings.NewReader(telemetryDataRequest))
 
 		if err != nil {
@@ -249,13 +264,16 @@ func (e *Exporter) RefreshTelemetryData(ch chan<- prometheus.Metric) error {
 		req.Header.Add("content-type", "text/xml")
 		req.Header.Add("Token", e.session.Token)
 
-		level.Debug(e.logger).Log("msg", "RefreshTelemetryData Request", "MspSystemID", site.MspSystemID, "req.Header", req.Header, "req.Body", req.Body)
+		level.Debug(e.logger).Log("msg", "RefreshTelemetryData Request Headers", "req.Header", fmt.Sprint(req.Header))
 
 		resp, err := client.Do(req)
 
 		if err != nil {
 			return err
 		}
+
+		level.Debug(e.logger).Log("msg", "RefreshTelemetryData Response Status Code", "resp.StatusCode", fmt.Sprint(resp.StatusCode))
+
 		if !(resp.StatusCode >= 200 && resp.StatusCode < 300) {
 			resp.Body.Close()
 			return fmt.Errorf("HTTP status %d", resp.StatusCode)
@@ -264,7 +282,8 @@ func (e *Exporter) RefreshTelemetryData(ch chan<- prometheus.Metric) error {
 		defer resp.Body.Close()
 		body, err := io.ReadAll(resp.Body)
 
-		level.Debug(e.logger).Log("msg", "RefreshTelemetryData Response", "resp.Header", resp.Header, "resp.Body", string(body))
+		level.Debug(e.logger).Log("msg", "RefreshTelemetryData Response Headers", "resp.Header", fmt.Sprint(resp.Header))
+		level.Debug(e.logger).Log("msg", "RefreshTelemetryData Response Body", "resp.Body", string(body))
 
 		if err != nil {
 			return err
