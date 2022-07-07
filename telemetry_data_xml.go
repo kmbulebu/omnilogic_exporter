@@ -96,7 +96,8 @@ func buildMetrics(ch chan<- prometheus.Metric, mspSystemId string, telemetryData
 					// It's a number, treat as a guage.
 					// We have to assume the number can go up or down.
 					floatValue, err := strconv.ParseFloat(v, 64)
-					if err == nil {
+					// A possibly poor assumption that negative values are invalid (e.g. airtemp)
+					if err == nil && floatValue >= 0 {
 						gaugeMetric := getGaugeMetric(namespace, item.name, k, mspSystemId, item.systemId)
 						gaugeMetric.Set(floatValue)
 						ch <- gaugeMetric
