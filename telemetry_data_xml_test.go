@@ -47,9 +47,9 @@ func TestTelemetryDataItem2(t *testing.T) {
 	metrics := make(chan prometheus.Metric, 100)
 	buildMetrics(metrics, "54321", *telemetryData)
 
-	// There should be one less as a result of deduping by systemid
-	if len(metrics) != 18 {
-		t.Fatalf("Expected 18 data items but found %v", len(metrics))
+	// CSAD dupes should be removed
+	if len(metrics) != 56 {
+		t.Fatalf("Expected 56 data items but found %v", len(metrics))
 	}
 
 }

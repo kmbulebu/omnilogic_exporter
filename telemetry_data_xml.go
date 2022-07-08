@@ -102,7 +102,7 @@ func buildMetrics(ch chan<- prometheus.Metric, mspSystemId string, telemetryData
 					if err == nil && floatValue >= 0 {
 						gaugeMetric := getGaugeMetric(namespace, item.name, k, mspSystemId, item.systemId)
 						gaugeMetric.Set(floatValue)
-						metricMap[item.systemId] = gaugeMetric
+						metricMap[item.name+k+item.systemId] = gaugeMetric
 					}
 				} else if yesNoRegex.MatchString(strings.ToLower(v)) {
 					// Matches yes or no, treat as a guage with a value of 1 or 0.
