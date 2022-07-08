@@ -1,0 +1,21 @@
+<STATUS version="1.0">
+    <Backyard systemId="54321" statusVersion="9" airTemp="110" status="1" state="1" configUpdatedTime="2022-07-05T16:55:38.759Z" datetime="2022-07-07T18:27:20.845" />
+    <BodyOfWater systemId="2" flow="1" waterTemp="89" />
+    <Filter systemId="3" valvePosition="1" filterSpeed="35" filterState="1" lastSpeed="35" />
+    <VirtualHeater systemId="16" Current-Set-Point="89" enable="no" />
+    <Heater systemId="18" heaterState="0" enable="no" />
+    <Heater systemId="66" heaterState="0" enable="yes" />
+    <Chlorinator systemId="22" operatingMode="1" Timed-Percent="25" scMode="0" chlrError="0" chlrAlert="0" avgSaltLevel="3181" instantSaltLevel="3014" status="128" />
+    <Pump systemId="4" pumpState="0" pumpSpeed="0" lastSpeed="100" />
+    <Pump systemId="19" pumpState="0" pumpSpeed="0" lastSpeed="100" />
+    <ColorLogic-Light systemId="5" lightState="0" currentShow="3" />
+    <CSAD systemId="0" ph="" orp="" status="0" mode="0" />
+    <BodyOfWater systemId="8" flow="1" waterTemp="-1" />
+    <Filter systemId="10" valvePosition="1" filterSpeed="0" filterState="0" lastSpeed="50" />
+    <VirtualHeater systemId="15" Current-Set-Point="98" enable="no" />
+    <Heater systemId="17" heaterState="0" enable="yes" />
+    <Heater systemId="67" heaterState="0" enable="no" />
+    <Chlorinator systemId="23" operatingMode="1" Timed-Percent="0" scMode="0" chlrError="0" chlrAlert="0" avgSaltLevel="0" instantSaltLevel="0" status="0" />
+    <Pump systemId="14" pumpState="0" pumpSpeed="0" lastSpeed="100" />
+    <CSAD systemId="0" ph="" orp="" status="0" mode="0" />
+</STATUS>

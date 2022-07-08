@@ -86,12 +86,14 @@ func buildMetrics(ch chan<- prometheus.Metric, mspSystemId string, telemetryData
 
 	yesNoRegex, _ := regexp.Compile("^(?:yes|no)$")
 
+	// Dedupe by systemdId with a map
+	metricMap := make(map[string]prometheus.Metric)
+
 	for _, item := range items {
 		for k, v := range item.attributes {
 
 			// If it has a value, try and parse it.
 			if len(v) > 0 {
-
 				if floatRegex.MatchString(v) {
 					// It's a number, treat as a guage.
 					// We have to assume the number can go up or down.
@@ -100,7 +102,7 @@ func buildMetrics(ch chan<- prometheus.Metric, mspSystemId string, telemetryData
 					if err == nil && floatValue >= 0 {
 						gaugeMetric := getGaugeMetric(namespace, item.name, k, mspSystemId, item.systemId)
 						gaugeMetric.Set(floatValue)
-						ch <- gaugeMetric
+						metricMap[item.systemId] = gaugeMetric
 					}
 				} else if yesNoRegex.MatchString(strings.ToLower(v)) {
 					// Matches yes or no, treat as a guage with a value of 1 or 0.
@@ -110,11 +112,17 @@ func buildMetrics(ch chan<- prometheus.Metric, mspSystemId string, telemetryData
 					}
 					gaugeMetric := getGaugeMetric(namespace, item.name, k, mspSystemId, item.systemId)
 					gaugeMetric.Set(floatValue)
-					ch <- gaugeMetric
+					metricMap[item.systemId] = gaugeMetric
 				}
 			}
 
 		}
 	}
+
+	// Send metrics
+	for _, metric := range metricMap {
+		ch <- metric
+	}
+
 	return nil
 }

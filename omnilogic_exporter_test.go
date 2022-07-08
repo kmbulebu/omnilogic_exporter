@@ -193,7 +193,10 @@ func TestSiteStatusMetrics(t *testing.T) {
 		Token:  "deadbeef",
 		Status: "0",
 	}
-	exporter.RefreshSiteList()
+
+	ch := make(chan prometheus.Metric, 100)
+
+	exporter.RefreshSiteList(ch)
 
 	if err != nil {
 		t.Fatal("Error creating Exporter.", err)
